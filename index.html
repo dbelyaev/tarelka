@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>tarelka.xyz</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16x16.png">
+    <link rel="manifest" href="/assets/icons/site.webmanifest">
+    <style>
+        body { 
+            margin: 0; 
+            overflow: hidden;  /* This will hide the scrollbars */
+            width: 100vw;     /* Ensure body takes exactly viewport width */
+            height: 100vh;    /* Ensure body takes exactly viewport height */
+        }
+        canvas { 
+            display: block; 
+        }
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fflate@0.7.4/umd/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FBXLoader.js"></script>
+    <script>
+        // Set up scenes, camera, and renderer
+        const scene = new THREE.Scene();
+        const backgroundScene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const backgroundCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, -1, 1);
+        
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.autoClear = false;
+        renderer.setClearColor(0x000000, 0);
+        document.body.appendChild(renderer.domElement);
+
+        // Set up background gradient
+        const vertexShader = `
+            varying vec2 vUv;
+            void main() {
+                vUv = uv;
+                gl_Position = vec4(position, 1.0);
+            }
+        `;
+
+        const availableColors = [
+            [1.0, 0.6, 0.0],  // acid orange
+            [1.0, 0.0, 1.0],  // magenta
+            [1.0, 0.0, 0.0],  // red
+            [0.5, 0.0, 0.5],  // purple
+            [0.0, 1.0, 0.0],  // green
+            [0.0, 1.0, 1.0],  // cyan
+            [0.0, 0.0, 1.0]   // blue
+        ];
+        
+        const randomColor = availableColors[Math.floor(Math.random() * availableColors.length)];
+
+        const fragmentShader = `
+            varying vec2 vUv;
+            uniform vec3 fillColor;
+            void main() {
+                vec2 center = vec2(0.5, 0.5);
+                float dist = distance(vUv, center);
+                vec3 darkColor = fillColor * 0.2;
+                vec3 color = mix(fillColor, darkColor, dist * 1.25);
+                gl_FragColor = vec4(color, 1.0);
+            }
+        `;
+
+        const backgroundMaterial = new THREE.ShaderMaterial({
+            vertexShader: vertexShader,
+            fragmentShader: fragmentShader,
+            uniforms: {
+                fillColor: { value: new THREE.Vector3(randomColor[0], randomColor[1], randomColor[2]) }
+            }
+        });
+
+        const backgroundGeometry = new THREE.PlaneGeometry(2, 2);
+        const backgroundMesh = new THREE.Mesh(backgroundGeometry, backgroundMaterial);
+        backgroundScene.add(backgroundMesh);
+
+        // Modify lights
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.7);
+        directionalLight.position.set(2, 2, 2);
+        scene.add(directionalLight);
+
+        // Add a second directional light from a different angle
+        const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.5);
+        directionalLight2.position.set(-2, 0, -2);
+        scene.add(directionalLight2);
+
+        // Add a subtle point light for details
+        const pointLight = new THREE.PointLight(0xffffff, 0.4);
+        pointLight.position.set(0, 3, 0);
+        scene.add(pointLight);
+
+        // Position camera
+        camera.position.z = 2;
+        camera.position.y = 1;
+        camera.lookAt(0, 0, 0);
+
+        // Load the FBX model
+        const loader = new THREE.FBXLoader();
+        let model;
+
+        loader.load(
+            'assets/models/tarelka.fbx',
+            function (object) {
+                model = object;
+
+                // Center the model
+                const box = new THREE.Box3().setFromObject(model);
+                const center = box.getCenter(new THREE.Vector3());
+                model.position.sub(center);
+                
+                // Scale up the model
+                model.scale.set(1, 1, 1);
+                
+                scene.add(model);
+            },
+            function (xhr) {
+                console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+            },
+            function (error) {
+                console.error('An error occurred loading the model:', error);
+            }
+        );
+
+        const clock = new THREE.Clock();
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const delta = clock.getDelta();
+
+            // Clear everything
+            renderer.clear();
+
+            // Render background
+            renderer.render(backgroundScene, backgroundCamera);
+
+            // Enable depth testing for 3D objects
+            renderer.clearDepth();
+            
+            // Rotate the model if it's loaded
+            if (model) {
+                model.rotation.y += delta * 0.5; // Adjust rotation speed
+            }
+
+            // Render the main scene
+            renderer.render(scene, camera);
+        }
+
+        /**
+         * Handles window resize events by updating the camera and renderer dimensions.
+         * This ensures the 3D scene maintains proper proportions when the browser window
+         * is resized.
+         * 
+         * The function:
+         * 1. Updates the camera's aspect ratio to match the new window dimensions
+         * 2. Recalculates the camera's projection matrix
+         * 3. Resizes the renderer to match the new window dimensions
+         */
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        /**
+         * Creates a debounced version of a function that delays its execution
+         * until after a specified wait time has elapsed since the last call.
+         * @param {Function} func - The function to debounce
+         * @param {number} wait - The number of milliseconds to wait before executing
+         * @returns {Function} A debounced version of the input function
+         * 
+         * This is useful for performance optimization when handling frequent events
+         * like window resizing. Instead of executing the handler on every resize event,
+         * it waits until the resizing has stopped for the specified wait time.
+         */
+        function debounce(func, wait) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
+
+        animate();
+    </script>
+</body>
+</html>
