@@ -7,10 +7,6 @@ body {
     user-select: none;
 }
 
-body:active {
-    cursor: grabbing;
-}
-
 canvas { 
     display: block;
     touch-action: none;
