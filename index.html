@@ -264,8 +264,10 @@
 
                 // Center the model
                 const box = new THREE.Box3().setFromObject(model);
-                const center = box.getCenter(new THREE.Vector3());
-                model.position.sub(center);
+                if (!box.isEmpty()) {
+                    const center = box.getCenter(new THREE.Vector3());
+                    model.position.sub(center);
+                }
                 
                 scene.add(model);
 
