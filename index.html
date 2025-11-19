@@ -111,6 +111,8 @@
         );
         const backgroundCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, -1, 1);
         
+        // Note: antialias and precision are WebGL context parameters set at initialization
+        // and cannot be changed at runtime. Toggling ps1Style will only affect other settings.
         const renderer = new THREE.WebGLRenderer({ 
             antialias: !CONFIG.ps1Style,  // PS1 had no antialiasing
             precision: CONFIG.ps1Style ? 'lowp' : 'highp'  // Lower precision for PS1 look
