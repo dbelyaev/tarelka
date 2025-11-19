@@ -93,11 +93,11 @@
         backgroundScene.add(backgroundMesh);
 
         // Modify lights
-        const ambientLight = new THREE.AmbientLight(0xffffff, 2.0);
+        const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
         scene.add(ambientLight);
 
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 3.0);
-        directionalLight.position.set(2, 2, 10);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 2.5);
+        directionalLight.position.set(2, 2, 2);
         scene.add(directionalLight);
 
         // Add a second directional light from a different angle
@@ -106,13 +106,14 @@
         scene.add(directionalLight2);
 
         // Add a subtle point light for details
-        const pointLight = new THREE.PointLight(0xffffff, 0.5);
+        const pointLight = new THREE.PointLight(0xffffff, 1.5);
         pointLight.position.set(0, 3, 0);
         scene.add(pointLight);
 
-        // Add hemisphere light for softer fill and better contrast
-        const hemisphereLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.3);
-        scene.add(hemisphereLight);
+        // Add top-down light to emphasize depth in the center hole
+        const topLight = new THREE.DirectionalLight(0xffffff, 1.5);
+        topLight.position.set(0, 5, 0);
+        scene.add(topLight);
 
         // Position camera
         camera.position.z = 2;
@@ -128,12 +129,19 @@
             function (object) {
                 model = object;
 
+                // Update materials for new Three.js version
+                model.traverse((child) => {
+                    if (child.isMesh) {
+                        child.material.needsUpdate = true;
+                    }
+                });
+
                 // Center the model
                 const box = new THREE.Box3().setFromObject(model);
                 const center = box.getCenter(new THREE.Vector3());
                 model.position.sub(center);
                 
-                // Scale up the model
+                // Scale the model
                 model.scale.set(1, 1, 1);
                 
                 scene.add(model);
