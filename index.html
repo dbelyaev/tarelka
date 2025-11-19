@@ -21,10 +21,18 @@
     </style>
 </head>
 <body>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/fflate@0.7.4/umd/index.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FBXLoader.js"></script>
-    <script>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+            }
+        }
+    </script>
+    <script type="module">
+        import * as THREE from 'three';
+        import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
+
         // Set up scenes, camera, and renderer
         const scene = new THREE.Scene();
         const backgroundScene = new THREE.Scene();
@@ -33,6 +41,8 @@
         
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
         renderer.autoClear = false;
         renderer.setClearColor(0x000000, 0);
         document.body.appendChild(renderer.domElement);
@@ -83,22 +93,26 @@
         backgroundScene.add(backgroundMesh);
 
         // Modify lights
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+        const ambientLight = new THREE.AmbientLight(0xffffff, 2.0);
         scene.add(ambientLight);
 
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.7);
-        directionalLight.position.set(2, 2, 2);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 3.0);
+        directionalLight.position.set(2, 2, 10);
         scene.add(directionalLight);
 
         // Add a second directional light from a different angle
-        const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.5);
+        const directionalLight2 = new THREE.DirectionalLight(0xffffff, 2.0);
         directionalLight2.position.set(-2, 0, -2);
         scene.add(directionalLight2);
 
         // Add a subtle point light for details
-        const pointLight = new THREE.PointLight(0xffffff, 0.4);
+        const pointLight = new THREE.PointLight(0xffffff, 0.5);
         pointLight.position.set(0, 3, 0);
         scene.add(pointLight);
+
+        // Add hemisphere light for softer fill and better contrast
+        const hemisphereLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.3);
+        scene.add(hemisphereLight);
 
         // Position camera
         camera.position.z = 2;
@@ -106,7 +120,7 @@
         camera.lookAt(0, 0, 0);
 
         // Load the FBX model
-        const loader = new THREE.FBXLoader();
+        const loader = new FBXLoader();
         let model;
 
         loader.load(
