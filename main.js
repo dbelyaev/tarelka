@@ -87,7 +87,7 @@ renderer.domElement.addEventListener('webglcontextlost', function(event) {
     const loadingEl = document.getElementById('loading');
     if (loadingEl) {
         loadingEl.style.display = 'block';
-        loadingEl.innerHTML = '<div>Graphics context lost. Restoring...</div>';
+        loadingEl.textContent = 'Graphics context lost. Restoring...';
     }
 }, false);
 
@@ -194,7 +194,17 @@ function loadModel(attemptNumber = 1) {
     loadAttempts = attemptNumber;
     
     if (loadingEl && attemptNumber > 1) {
-        loadingEl.innerHTML = `<div>Loading... (Attempt ${attemptNumber}/${CONFIG.modelRetryAttempts})</div><div id="progress-bar"><div id="progress-fill"></div></div>`;
+        // Clear and rebuild loading UI for retry attempts
+        loadingEl.textContent = '';
+        const loadingText = document.createElement('div');
+        loadingText.textContent = `Loading... (Attempt ${attemptNumber}/${CONFIG.modelRetryAttempts})`;
+        const progressBar = document.createElement('div');
+        progressBar.id = 'progress-bar';
+        const progressFill = document.createElement('div');
+        progressFill.id = 'progress-fill';
+        progressBar.appendChild(progressFill);
+        loadingEl.appendChild(loadingText);
+        loadingEl.appendChild(progressBar);
     }
 
     loader.load(
@@ -274,7 +284,7 @@ function loadModel(attemptNumber = 1) {
             // Retry logic
             if (attemptNumber < CONFIG.modelRetryAttempts) {
                 if (loadingEl) {
-                    loadingEl.innerHTML = `<div>Loading failed. Retrying in ${CONFIG.modelRetryDelay / 1000}s...</div>`;
+                    loadingEl.textContent = `Loading failed. Retrying in ${CONFIG.modelRetryDelay / 1000}s...`;
                 }
                 setTimeout(() => {
                     loadModel(attemptNumber + 1);
@@ -282,26 +292,33 @@ function loadModel(attemptNumber = 1) {
             } else {
                 // All retry attempts exhausted
                 if (loadingEl) {
-                    loadingEl.innerHTML = `
-                        <div style="color: #ff6b6b;">Failed to load model</div>
-                        <div style="font-size: 12px; margin-top: 10px;">
-                            ${error.message || 'Please check your connection and refresh the page'}
-                        </div>
-                        <button id="retry-button" style="
-                            margin-top: 15px;
-                            padding: 8px 16px;
-                            background: white;
-                            border: none;
-                            border-radius: 4px;
-                            cursor: pointer;
-                            font-family: Arial, sans-serif;
-                        ">Retry</button>
-                    `;
-                    // Add event listener to retry button
-                    const retryButton = document.getElementById('retry-button');
-                    if (retryButton) {
-                        retryButton.addEventListener('click', () => location.reload());
-                    }
+                    loadingEl.textContent = '';
+                    
+                    // Create error message elements
+                    const errorTitle = document.createElement('div');
+                    errorTitle.style.color = '#ff6b6b';
+                    errorTitle.textContent = 'Failed to load model';
+                    
+                    const errorDetails = document.createElement('div');
+                    errorDetails.style.fontSize = '12px';
+                    errorDetails.style.marginTop = '10px';
+                    errorDetails.textContent = error.message || 'Please check your connection and refresh the page';
+                    
+                    const retryButton = document.createElement('button');
+                    retryButton.id = 'retry-button';
+                    retryButton.style.marginTop = '15px';
+                    retryButton.style.padding = '8px 16px';
+                    retryButton.style.background = 'white';
+                    retryButton.style.border = 'none';
+                    retryButton.style.borderRadius = '4px';
+                    retryButton.style.cursor = 'pointer';
+                    retryButton.style.fontFamily = 'Arial, sans-serif';
+                    retryButton.textContent = 'Retry';
+                    retryButton.addEventListener('click', () => location.reload());
+                    
+                    loadingEl.appendChild(errorTitle);
+                    loadingEl.appendChild(errorDetails);
+                    loadingEl.appendChild(retryButton);
                 }
             }
         }
