@@ -15,7 +15,7 @@ const CONFIG = {
         returnSpeed: 0.02 // Speed of returning to default rotation
     },
     mouse: {
-        sensitivity: 0.005, // Mouse rotation sensitivity
+        sensitivity: 0.008, // Mouse rotation sensitivity
         minDragDistance: 5 // Minimum pixels to consider as drag
     },
     camera: {
