@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline' 'self' https://cdn.jsdelivr.net; style-src 'unsafe-inline' 'self'; img-src 'self' data:; connect-src 'self' https://cdn.jsdelivr.net; manifest-src 'self'; worker-src 'self' blob:;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'nonce-tarelka-inline-script'; style-src 'self' 'nonce-tarelka-inline-style'; img-src 'self' data:; connect-src 'self' https://cdn.jsdelivr.net; manifest-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self';">
     <title>tarelka.xyz</title>
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16x16.png">
     <link rel="manifest" href="/assets/icons/site.webmanifest">
-    <style>
+    <style nonce="tarelka-inline-style">
         body { 
             margin: 0; 
             overflow: hidden;  /* This will hide the scrollbars */
@@ -68,7 +68,7 @@
         </div>
     </div>
     <div id="fps-counter">FPS: --</div>
-    <script type="importmap">
+    <script type="importmap" nonce="tarelka-inline-script">
         {
             "imports": {
                 "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
@@ -76,7 +76,7 @@
             }
         }
     </script>
-    <script type="module">
+    <script type="module" nonce="tarelka-inline-script">
         import * as THREE from 'three';
         import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 
@@ -364,7 +364,7 @@
                                 <div style="font-size: 12px; margin-top: 10px;">
                                     ${error.message || 'Please check your connection and refresh the page'}
                                 </div>
-                                <button onclick="location.reload()" style="
+                                <button id="retry-button" style="
                                     margin-top: 15px;
                                     padding: 8px 16px;
                                     background: white;
@@ -374,6 +374,11 @@
                                     font-family: Arial, sans-serif;
                                 ">Retry</button>
                             `;
+                            // Add event listener to retry button
+                            const retryButton = document.getElementById('retry-button');
+                            if (retryButton) {
+                                retryButton.addEventListener('click', () => location.reload());
+                            }
                         }
                     }
                 }
