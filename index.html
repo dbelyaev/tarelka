@@ -67,6 +67,7 @@
 
         // Configuration
         const CONFIG = {
+            ps1Style: true, // Enable PS1 graphics style
             rotation: {
                 speed: 0.5
             },
@@ -110,9 +111,27 @@
         );
         const backgroundCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, -1, 1);
         
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
+        const renderer = new THREE.WebGLRenderer({ 
+            antialias: !CONFIG.ps1Style,  // PS1 had no antialiasing
+            precision: CONFIG.ps1Style ? 'lowp' : 'highp'  // Lower precision for PS1 look
+        });
+        
+        // PS1-style low resolution (scale down for pixelated look)
+        const pixelScale = CONFIG.ps1Style ? 2 : 1; // Lower = more pixelated
+        renderer.setSize(
+            window.innerWidth / pixelScale, 
+            window.innerHeight / pixelScale
+        );
+        
+        if (CONFIG.ps1Style) {
+            renderer.domElement.style.width = window.innerWidth + 'px';
+            renderer.domElement.style.height = window.innerHeight + 'px';
+            renderer.domElement.style.imageRendering = 'pixelated'; // CSS for sharp pixels
+            renderer.setPixelRatio(1); // Force 1:1 pixel ratio for PS1 look
+        } else {
+            renderer.setPixelRatio(window.devicePixelRatio);
+        }
+        
         renderer.outputColorSpace = THREE.SRGBColorSpace;
         renderer.autoClear = false;
         renderer.setClearColor(0x000000, 0);
@@ -205,9 +224,24 @@
             function (object) {
                 model = object;
 
-                // Update materials for new Three.js version
+                // Apply PS1-style material modifications
                 model.traverse((child) => {
                     if (child.isMesh) {
+                        if (CONFIG.ps1Style) {
+                            // Enable flat shading for low-poly PS1 look
+                            child.material.flatShading = true;
+                            
+                            // Disable texture filtering for pixelated textures
+                            if (child.material.map) {
+                                child.material.map.minFilter = THREE.NearestFilter;
+                                child.material.map.magFilter = THREE.NearestFilter;
+                                child.material.map.generateMipmaps = false;
+                            }
+                            
+                            // Reduce color precision (color banding effect)
+                            child.material.dithering = false;
+                        }
+                        
                         child.material.needsUpdate = true;
                     }
                 });
@@ -244,12 +278,20 @@
         );
 
         const clock = new THREE.Clock();
+        
+        // PS1-style vertex jitter effect
+        let jitterTime = 0;
+        const jitterAmount = 0.002; // Subtle vertex wobble
 
         // Animation loop
         function animate() {
             requestAnimationFrame(animate);
 
             const delta = clock.getDelta();
+            
+            if (CONFIG.ps1Style) {
+                jitterTime += delta;
+            }
 
             // Clear everything
             renderer.clear();
@@ -263,6 +305,18 @@
             // Rotate the model if it's loaded
             if (model) {
                 model.rotation.y += delta * CONFIG.rotation.speed;
+                
+                if (CONFIG.ps1Style) {
+                    // Apply PS1-style vertex jitter/wobble
+                    model.position.x = Math.sin(jitterTime * 10) * jitterAmount;
+                    model.position.y = Math.cos(jitterTime * 15) * jitterAmount;
+                    model.position.z = Math.sin(jitterTime * 12) * jitterAmount;
+                } else {
+                    // Reset position for non-PS1 mode
+                    model.position.x = 0;
+                    model.position.y = 0;
+                    model.position.z = 0;
+                }
             }
 
             // Render the main scene
@@ -277,12 +331,23 @@
          * The function:
          * 1. Updates the camera's aspect ratio to match the new window dimensions
          * 2. Recalculates the camera's projection matrix
-         * 3. Resizes the renderer to match the new window dimensions
+         * 3. Resizes the renderer to match the new window dimensions (with PS1 pixelation if enabled)
          */
         function onWindowResize() {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
+            
+            // Maintain PS1-style low resolution if enabled
+            const pixelScale = CONFIG.ps1Style ? 2 : 1;
+            renderer.setSize(
+                window.innerWidth / pixelScale, 
+                window.innerHeight / pixelScale
+            );
+            
+            if (CONFIG.ps1Style) {
+                renderer.domElement.style.width = window.innerWidth + 'px';
+                renderer.domElement.style.height = window.innerHeight + 'px';
+            }
         }
 
         /**
