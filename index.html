@@ -44,6 +44,20 @@
             background: white;
             transition: width 0.1s ease;
         }
+        #fps-counter {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px 10px;
+            border-radius: 4px;
+            pointer-events: none;
+            z-index: 1000;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+        }
     </style>
 </head>
 <body>
@@ -53,6 +67,7 @@
             <div id="progress-fill"></div>
         </div>
     </div>
+    <div id="fps-counter">FPS: --</div>
     <script type="importmap">
         {
             "imports": {
@@ -72,6 +87,7 @@
             ps1Jitter: 0.002, // PS1 vertex wobble intensity (higher = more jitter)
             modelRetryAttempts: 3, // Number of times to retry loading the model
             modelRetryDelay: 2000, // Delay in ms between retry attempts
+            showFPS: true, // Show FPS counter
             rotation: {
                 speed: 0.5
             },
@@ -372,6 +388,12 @@
         // PS1-style vertex jitter effect
         let jitterTime = 0;
 
+        // FPS counter
+        const fpsCounter = document.getElementById('fps-counter');
+        let frameCount = 0;
+        let lastFpsUpdate = performance.now();
+        let fps = 0;
+
         // Animation loop
         function animate() {
             requestAnimationFrame(animate);
@@ -380,6 +402,18 @@
             
             if (CONFIG.ps1Style) {
                 jitterTime += delta;
+            }
+
+            // Update FPS counter
+            if (CONFIG.showFPS && fpsCounter) {
+                frameCount++;
+                const now = performance.now();
+                if (now >= lastFpsUpdate + 1000) {
+                    fps = Math.round((frameCount * 1000) / (now - lastFpsUpdate));
+                    fpsCounter.textContent = `FPS: ${fps}`;
+                    frameCount = 0;
+                    lastFpsUpdate = now;
+                }
             }
 
             // Clear everything
