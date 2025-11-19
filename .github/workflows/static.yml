@@ -28,18 +28,40 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v5
         with:
           lfs: true
+      
+      - name: Cache LFS objects
+        uses: actions/cache@v4
+        with:
+          path: .git/lfs
+          key: ${{ runner.os }}-lfs-${{ hashFiles('.gitattributes') }}
+          restore-keys: |
+            ${{ runner.os }}-lfs-
+      
       - name: Setup Pages
         uses: actions/configure-pages@v5
+      
+      - name: Cache Pages artifact
+        uses: actions/cache@v4
+        with:
+          path: |
+            ./*
+            !.git
+          key: ${{ runner.os }}-pages-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-pages-
+      
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
           # Upload entire repository
           path: '.'
+      
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
