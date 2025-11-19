@@ -191,6 +191,9 @@
             };
         }
 
+        // Attach the resize event listener with debouncing
+        window.addEventListener('resize', debounce(onWindowResize, 100));
+
         animate();
     </script>
 </body>
