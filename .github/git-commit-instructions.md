@@ -33,9 +33,7 @@ messages to ensure a readable history, automate changelog generation, and facili
      - `ci`: Changes to CI configuration files and scripts (e.g., GitHub Actions, Travis, Circle)
      - `chore`: Maintenance tasks (e.g., build process, dependencies)
      - `revert`: Reverts a previous commit
-
    - **scope** (optional): A noun describing a section of the codebase surrounded by parentheses, e.g., `fix(parser):`. The scope provides additional contextual information about what part of the codebase is affected by the change.
-
    - **description**: short imperative description, no initial capital letter, no period at the end
    - **first line must not exceed 72 characters**
    - **body** (optional): detailed description of the change, wrapped at 100 characters.
