@@ -27,6 +27,7 @@
             text-align: center;
             font-family: Arial, sans-serif;
             color: white;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
         }
         #progress-bar {
             width: 100%;
@@ -76,13 +77,24 @@
             },
             lighting: {
                 ambient: 1.0,
-                directional1: 2.5,
-                directional2: 2.0,
-                point: 1.5,
-                top: 1.5
+                directional1: { intensity: 2.5, position: { x: 2, y: 2, z: 2 } },
+                directional2: { intensity: 2.0, position: { x: -2, y: 0, z: -2 } },
+                point: { intensity: 1.5, position: { x: 0, y: 3, z: 0 } },
+                top: { intensity: 1.5, position: { x: 0, y: 5, z: 0 } }
             },
             resize: {
                 debounceMs: 100
+            },
+            background: {
+                colors: [
+                    [1.0, 0.6, 0.0],  // acid orange
+                    [1.0, 0.0, 1.0],  // magenta
+                    [1.0, 0.0, 0.0],  // red
+                    [0.5, 0.0, 0.5],  // purple
+                    [0.0, 1.0, 0.0],  // green
+                    [0.0, 1.0, 1.0],  // cyan
+                    [0.0, 0.0, 1.0]   // blue
+                ]
             }
         };
 
@@ -113,18 +125,8 @@
                 gl_Position = vec4(position, 1.0);
             }
         `;
-
-        const availableColors = [
-            [1.0, 0.6, 0.0],  // acid orange
-            [1.0, 0.0, 1.0],  // magenta
-            [1.0, 0.0, 0.0],  // red
-            [0.5, 0.0, 0.5],  // purple
-            [0.0, 1.0, 0.0],  // green
-            [0.0, 1.0, 1.0],  // cyan
-            [0.0, 0.0, 1.0]   // blue
-        ];
         
-        const randomColor = availableColors[Math.floor(Math.random() * availableColors.length)];
+        const randomColor = CONFIG.background.colors[Math.floor(Math.random() * CONFIG.background.colors.length)];
 
         const fragmentShader = `
             varying vec2 vUv;
@@ -154,20 +156,36 @@
         const ambientLight = new THREE.AmbientLight(0xffffff, CONFIG.lighting.ambient);
         scene.add(ambientLight);
 
-        const directionalLight = new THREE.DirectionalLight(0xffffff, CONFIG.lighting.directional1);
-        directionalLight.position.set(2, 2, 2);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, CONFIG.lighting.directional1.intensity);
+        directionalLight.position.set(
+            CONFIG.lighting.directional1.position.x,
+            CONFIG.lighting.directional1.position.y,
+            CONFIG.lighting.directional1.position.z
+        );
         scene.add(directionalLight);
 
-        const directionalLight2 = new THREE.DirectionalLight(0xffffff, CONFIG.lighting.directional2);
-        directionalLight2.position.set(-2, 0, -2);
+        const directionalLight2 = new THREE.DirectionalLight(0xffffff, CONFIG.lighting.directional2.intensity);
+        directionalLight2.position.set(
+            CONFIG.lighting.directional2.position.x,
+            CONFIG.lighting.directional2.position.y,
+            CONFIG.lighting.directional2.position.z
+        );
         scene.add(directionalLight2);
 
-        const pointLight = new THREE.PointLight(0xffffff, CONFIG.lighting.point);
-        pointLight.position.set(0, 3, 0);
+        const pointLight = new THREE.PointLight(0xffffff, CONFIG.lighting.point.intensity);
+        pointLight.position.set(
+            CONFIG.lighting.point.position.x,
+            CONFIG.lighting.point.position.y,
+            CONFIG.lighting.point.position.z
+        );
         scene.add(pointLight);
 
-        const topLight = new THREE.DirectionalLight(0xffffff, CONFIG.lighting.top);
-        topLight.position.set(0, 5, 0);
+        const topLight = new THREE.DirectionalLight(0xffffff, CONFIG.lighting.top.intensity);
+        topLight.position.set(
+            CONFIG.lighting.top.position.x,
+            CONFIG.lighting.top.position.y,
+            CONFIG.lighting.top.position.z
+        );
         scene.add(topLight);
 
         // Position camera
