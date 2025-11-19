@@ -33,10 +33,38 @@
         import * as THREE from 'three';
         import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 
+        // Configuration
+        const CONFIG = {
+            rotation: {
+                speed: 0.5
+            },
+            camera: {
+                fov: 75,
+                near: 0.1,
+                far: 1000,
+                position: { x: 0, y: 1, z: 2 }
+            },
+            lighting: {
+                ambient: 1.0,
+                directional1: 2.5,
+                directional2: 2.0,
+                point: 1.5,
+                top: 1.5
+            },
+            resize: {
+                debounceMs: 100
+            }
+        };
+
         // Set up scenes, camera, and renderer
         const scene = new THREE.Scene();
         const backgroundScene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const camera = new THREE.PerspectiveCamera(
+            CONFIG.camera.fov,
+            window.innerWidth / window.innerHeight,
+            CONFIG.camera.near,
+            CONFIG.camera.far
+        );
         const backgroundCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, -1, 1);
         
         const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -92,32 +120,28 @@
         const backgroundMesh = new THREE.Mesh(backgroundGeometry, backgroundMaterial);
         backgroundScene.add(backgroundMesh);
 
-        // Modify lights
-        const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
+        // Set up lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, CONFIG.lighting.ambient);
         scene.add(ambientLight);
 
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 2.5);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, CONFIG.lighting.directional1);
         directionalLight.position.set(2, 2, 2);
         scene.add(directionalLight);
 
-        // Add a second directional light from a different angle
-        const directionalLight2 = new THREE.DirectionalLight(0xffffff, 2.0);
+        const directionalLight2 = new THREE.DirectionalLight(0xffffff, CONFIG.lighting.directional2);
         directionalLight2.position.set(-2, 0, -2);
         scene.add(directionalLight2);
 
-        // Add a subtle point light for details
-        const pointLight = new THREE.PointLight(0xffffff, 1.5);
+        const pointLight = new THREE.PointLight(0xffffff, CONFIG.lighting.point);
         pointLight.position.set(0, 3, 0);
         scene.add(pointLight);
 
-        // Add top-down light to emphasize depth in the center hole
-        const topLight = new THREE.DirectionalLight(0xffffff, 1.5);
+        const topLight = new THREE.DirectionalLight(0xffffff, CONFIG.lighting.top);
         topLight.position.set(0, 5, 0);
         scene.add(topLight);
 
         // Position camera
-        camera.position.z = 2;
-        camera.position.y = 1;
+        camera.position.set(CONFIG.camera.position.x, CONFIG.camera.position.y, CONFIG.camera.position.z);
         camera.lookAt(0, 0, 0);
 
         // Load the FBX model
@@ -141,16 +165,13 @@
                 const center = box.getCenter(new THREE.Vector3());
                 model.position.sub(center);
                 
-                // Scale the model
-                model.scale.set(1, 1, 1);
-                
                 scene.add(model);
             },
-            function (xhr) {
-                console.log((xhr.loaded / xhr.total * 100) + '% loaded');
-            },
+            undefined,
             function (error) {
-                console.error('An error occurred loading the model:', error);
+                // Handle error silently in production
+                // Development: uncomment the line below
+                // console.error('An error occurred loading the model:', error);
             }
         );
 
@@ -173,7 +194,7 @@
             
             // Rotate the model if it's loaded
             if (model) {
-                model.rotation.y += delta * 0.5; // Adjust rotation speed
+                model.rotation.y += delta * CONFIG.rotation.speed;
             }
 
             // Render the main scene
@@ -216,7 +237,7 @@
         }
 
         // Attach the resize event listener with debouncing
-        window.addEventListener('resize', debounce(onWindowResize, 100));
+        window.addEventListener('resize', debounce(onWindowResize, CONFIG.resize.debounceMs));
 
         animate();
     </script>
