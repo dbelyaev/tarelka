@@ -70,6 +70,8 @@
             ps1Style: true, // Enable PS1 graphics style
             ps1PixelScale: 2, // PS1 pixelation level (higher = less pixelated, 1 = no pixelation)
             ps1Jitter: 0.002, // PS1 vertex wobble intensity (higher = more jitter)
+            modelRetryAttempts: 3, // Number of times to retry loading the model
+            modelRetryDelay: 2000, // Delay in ms between retry attempts
             rotation: {
                 speed: 0.5
             },
@@ -140,6 +142,27 @@
         renderer.autoClear = false;
         renderer.setClearColor(0x000000, 0);
         document.body.appendChild(renderer.domElement);
+
+        // Handle WebGL context loss and restoration
+        renderer.domElement.addEventListener('webglcontextlost', function(event) {
+            event.preventDefault();
+            console.warn('WebGL context lost. Attempting to restore...');
+            if (loadingEl) {
+                loadingEl.style.display = 'block';
+                loadingEl.innerHTML = '<div>Graphics context lost. Restoring...</div>';
+            }
+        }, false);
+
+        renderer.domElement.addEventListener('webglcontextrestored', function() {
+            console.log('WebGL context restored.');
+            if (loadingEl && model) {
+                loadingEl.style.display = 'none';
+            }
+            // Re-render scene after context restoration
+            if (model) {
+                renderer.render(scene, camera);
+            }
+        }, false);
 
         // Set up background gradient
         const vertexShader = `
@@ -219,81 +242,130 @@
         // Load the FBX model
         const loader = new FBXLoader();
         let model;
+        let loadAttempts = 0;
 
         const loadingEl = document.getElementById('loading');
         const progressFill = document.getElementById('progress-fill');
 
-        loader.load(
-            'assets/models/tarelka.fbx',
-            function (object) {
-                model = object;
-
-                // Apply PS1-style material modifications
-                model.traverse((child) => {
-                    if (child.isMesh) {
-                        if (CONFIG.ps1Style) {
-                            // Enable flat shading for low-poly PS1 look
-                            child.material.flatShading = true;
-                            
-                            // Disable texture filtering for pixelated textures
-                            if (child.material.map) {
-                                child.material.map.minFilter = THREE.NearestFilter;
-                                child.material.map.magFilter = THREE.NearestFilter;
-                                child.material.map.generateMipmaps = false;
-                            }
-                            
-                            // Reduce color precision (color banding effect)
-                            child.material.dithering = false;
-                        } else {
-                            // Restore smooth rendering for non-PS1 mode
-                            child.material.flatShading = false;
-                            
-                            // Restore smooth texture filtering
-                            if (child.material.map) {
-                                child.material.map.minFilter = THREE.LinearMipmapLinearFilter;
-                                child.material.map.magFilter = THREE.LinearFilter;
-                                child.material.map.generateMipmaps = true;
-                            }
-                            
-                            child.material.dithering = false;
-                        }
-                        
-                        child.material.needsUpdate = true;
-                    }
-                });
-
-                // Center the model
-                const box = new THREE.Box3().setFromObject(model);
-                if (!box.isEmpty()) {
-                    const center = box.getCenter(new THREE.Vector3());
-                    model.position.sub(center);
-                }
-                
-                scene.add(model);
-
-                // Hide loading UI
-                if (loadingEl) {
-                    loadingEl.style.display = 'none';
-                }
-            },
-            function (xhr) {
-                // Update progress bar
-                if (xhr.lengthComputable && progressFill) {
-                    const percentComplete = (xhr.loaded / xhr.total) * 100;
-                    progressFill.style.width = percentComplete + '%';
-                }
-            },
-            function (error) {
-                // Handle error silently in production
-                // Development: uncomment the line below
-                // console.error('An error occurred loading the model:', error);
-                
-                // Show error in loading UI
-                if (loadingEl) {
-                    loadingEl.innerHTML = '<div>Failed to load model</div>';
-                }
+        /**
+         * Loads the FBX model with retry logic
+         * @param {number} attemptNumber - Current attempt number
+         */
+        function loadModel(attemptNumber = 1) {
+            loadAttempts = attemptNumber;
+            
+            if (loadingEl && attemptNumber > 1) {
+                loadingEl.innerHTML = `<div>Loading... (Attempt ${attemptNumber}/${CONFIG.modelRetryAttempts})</div><div id="progress-bar"><div id="progress-fill"></div></div>`;
             }
-        );
+
+            loader.load(
+                'assets/models/tarelka.fbx',
+                function (object) {
+                    model = object;
+
+                    // Apply PS1-style material modifications
+                    model.traverse((child) => {
+                        if (child.isMesh) {
+                            try {
+                                if (CONFIG.ps1Style) {
+                                    // Enable flat shading for low-poly PS1 look
+                                    child.material.flatShading = true;
+                                    
+                                    // Disable texture filtering for pixelated textures
+                                    if (child.material.map) {
+                                        child.material.map.minFilter = THREE.NearestFilter;
+                                        child.material.map.magFilter = THREE.NearestFilter;
+                                        child.material.map.generateMipmaps = false;
+                                    }
+                                    
+                                    // Reduce color precision (color banding effect)
+                                    child.material.dithering = false;
+                                } else {
+                                    // Restore smooth rendering for non-PS1 mode
+                                    child.material.flatShading = false;
+                                    
+                                    // Restore smooth texture filtering
+                                    if (child.material.map) {
+                                        child.material.map.minFilter = THREE.LinearMipmapLinearFilter;
+                                        child.material.map.magFilter = THREE.LinearFilter;
+                                        child.material.map.generateMipmaps = true;
+                                    }
+                                    
+                                    child.material.dithering = false;
+                                }
+                                
+                                child.material.needsUpdate = true;
+                            } catch (materialError) {
+                                console.error('Error applying material settings:', materialError);
+                                // Continue with default material if modification fails
+                            }
+                        }
+                    });
+
+                    // Center the model
+                    try {
+                        const box = new THREE.Box3().setFromObject(model);
+                        if (!box.isEmpty()) {
+                            const center = box.getCenter(new THREE.Vector3());
+                            model.position.sub(center);
+                        }
+                    } catch (centerError) {
+                        console.error('Error centering model:', centerError);
+                        // Continue without centering if it fails
+                    }
+                    
+                    scene.add(model);
+
+                    // Hide loading UI
+                    if (loadingEl) {
+                        loadingEl.style.display = 'none';
+                    }
+                },
+                function (xhr) {
+                    // Update progress bar
+                    const progressFillEl = document.getElementById('progress-fill');
+                    if (xhr.lengthComputable && progressFillEl) {
+                        const percentComplete = (xhr.loaded / xhr.total) * 100;
+                        progressFillEl.style.width = percentComplete + '%';
+                    }
+                },
+                function (error) {
+                    console.error(`Model loading error (attempt ${attemptNumber}):`, error);
+                    
+                    // Retry logic
+                    if (attemptNumber < CONFIG.modelRetryAttempts) {
+                        if (loadingEl) {
+                            loadingEl.innerHTML = `<div>Loading failed. Retrying in ${CONFIG.modelRetryDelay / 1000}s...</div>`;
+                        }
+                        setTimeout(() => {
+                            loadModel(attemptNumber + 1);
+                        }, CONFIG.modelRetryDelay);
+                    } else {
+                        // All retry attempts exhausted
+                        if (loadingEl) {
+                            loadingEl.innerHTML = `
+                                <div style="color: #ff6b6b;">Failed to load model</div>
+                                <div style="font-size: 12px; margin-top: 10px;">
+                                    ${error.message || 'Please check your connection and refresh the page'}
+                                </div>
+                                <button onclick="location.reload()" style="
+                                    margin-top: 15px;
+                                    padding: 8px 16px;
+                                    background: white;
+                                    border: none;
+                                    border-radius: 4px;
+                                    cursor: pointer;
+                                    font-family: Arial, sans-serif;
+                                ">Retry</button>
+                            `;
+                        }
+                    }
+                }
+            );
+        }
+
+        // Start loading the model
+        loadModel();
 
         const clock = new THREE.Clock();
         
@@ -321,18 +393,28 @@
             
             // Rotate the model if it's loaded
             if (model) {
-                model.rotation.y += delta * CONFIG.rotation.speed;
-                
-                if (CONFIG.ps1Style) {
-                    // Apply PS1-style vertex jitter/wobble
-                    model.position.x = Math.sin(jitterTime * 10) * CONFIG.ps1Jitter;
-                    model.position.y = Math.cos(jitterTime * 15) * CONFIG.ps1Jitter;
-                    model.position.z = Math.sin(jitterTime * 12) * CONFIG.ps1Jitter;
+                try {
+                    model.rotation.y += delta * CONFIG.rotation.speed;
+                    
+                    if (CONFIG.ps1Style) {
+                        // Apply PS1-style vertex jitter/wobble
+                        model.position.x = Math.sin(jitterTime * 10) * CONFIG.ps1Jitter;
+                        model.position.y = Math.cos(jitterTime * 15) * CONFIG.ps1Jitter;
+                        model.position.z = Math.sin(jitterTime * 12) * CONFIG.ps1Jitter;
+                    }
+                } catch (animationError) {
+                    console.error('Animation error:', animationError);
+                    // Continue animation loop even if there's an error
                 }
             }
 
             // Render the main scene
-            renderer.render(scene, camera);
+            try {
+                renderer.render(scene, camera);
+            } catch (renderError) {
+                console.error('Render error:', renderError);
+                // Rendering will continue on next frame
+            }
         }
 
         /**
@@ -346,19 +428,24 @@
          * 3. Resizes the renderer to match the new window dimensions (with PS1 pixelation if enabled)
          */
         function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            
-            // Maintain PS1-style low resolution if enabled
-            const pixelScale = CONFIG.ps1Style ? CONFIG.ps1PixelScale : 1;
-            renderer.setSize(
-                window.innerWidth / pixelScale, 
-                window.innerHeight / pixelScale
-            );
-            
-            if (CONFIG.ps1Style) {
-                renderer.domElement.style.width = window.innerWidth + 'px';
-                renderer.domElement.style.height = window.innerHeight + 'px';
+            try {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                
+                // Maintain PS1-style low resolution if enabled
+                const pixelScale = CONFIG.ps1Style ? CONFIG.ps1PixelScale : 1;
+                renderer.setSize(
+                    window.innerWidth / pixelScale, 
+                    window.innerHeight / pixelScale
+                );
+                
+                if (CONFIG.ps1Style) {
+                    renderer.domElement.style.width = window.innerWidth + 'px';
+                    renderer.domElement.style.height = window.innerHeight + 'px';
+                }
+            } catch (resizeError) {
+                console.error('Resize error:', resizeError);
+                // Continue without resizing if there's an error
             }
         }
 
