@@ -476,6 +476,11 @@ let frameCount = 0;
 let lastFpsUpdate = performance.now();
 let fps = 0;
 
+// Show FPS counter if enabled in config
+if (CONFIG.showFPS && fpsCounter) {
+    fpsCounter.style.display = 'block';
+}
+
 // Animation loop
 function animate() {
     requestAnimationFrame(animate);
