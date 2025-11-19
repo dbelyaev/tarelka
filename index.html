@@ -69,6 +69,7 @@
         const CONFIG = {
             ps1Style: true, // Enable PS1 graphics style
             ps1PixelScale: 2, // PS1 pixelation level (higher = less pixelated, 1 = no pixelation)
+            ps1Jitter: 0.002, // PS1 vertex wobble intensity (higher = more jitter)
             rotation: {
                 speed: 0.5
             },
@@ -296,7 +297,6 @@
         
         // PS1-style vertex jitter effect
         let jitterTime = 0;
-        const jitterAmount = 0.002; // Subtle vertex wobble
 
         // Animation loop
         function animate() {
@@ -323,9 +323,9 @@
                 
                 if (CONFIG.ps1Style) {
                     // Apply PS1-style vertex jitter/wobble
-                    model.position.x = Math.sin(jitterTime * 10) * jitterAmount;
-                    model.position.y = Math.cos(jitterTime * 15) * jitterAmount;
-                    model.position.z = Math.sin(jitterTime * 12) * jitterAmount;
+                    model.position.x = Math.sin(jitterTime * 10) * CONFIG.ps1Jitter;
+                    model.position.y = Math.cos(jitterTime * 15) * CONFIG.ps1Jitter;
+                    model.position.z = Math.sin(jitterTime * 12) * CONFIG.ps1Jitter;
                 }
             }
 
