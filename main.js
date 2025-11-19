@@ -10,7 +10,13 @@ const CONFIG = {
     modelRetryDelay: 2000, // Delay in ms between retry attempts
     showFPS: true, // Show FPS counter
     rotation: {
-        speed: 0.5
+        speed: 0.5,
+        inertia: 0.95, // Inertia damping factor (0-1, closer to 1 = more inertia)
+        returnSpeed: 0.02 // Speed of returning to default rotation
+    },
+    mouse: {
+        sensitivity: 0.005, // Mouse rotation sensitivity
+        minDragDistance: 5 // Minimum pixels to consider as drag
     },
     camera: {
         fov: 75,
@@ -333,6 +339,120 @@ const clock = new THREE.Clock();
 // PS1-style vertex jitter effect
 let jitterTime = 0;
 
+// Mouse interaction state
+const mouseState = {
+    isDragging: false,
+    previousX: 0,
+    previousY: 0,
+    startX: 0,
+    startY: 0,
+    velocityX: 0,
+    velocityY: 0,
+    rotationX: 0, // Current additional rotation from user interaction
+    rotationY: 0,
+    defaultRotationY: 0 // Track default auto-rotation
+};
+
+// Mouse event handlers
+function onMouseDown(event) {
+    if (event.button === 0) { // Left mouse button
+        mouseState.isDragging = true;
+        mouseState.startX = event.clientX;
+        mouseState.startY = event.clientY;
+        mouseState.previousX = event.clientX;
+        mouseState.previousY = event.clientY;
+        mouseState.velocityX = 0;
+        mouseState.velocityY = 0;
+        document.body.style.cursor = 'grabbing';
+    }
+}
+
+function onMouseMove(event) {
+    if (mouseState.isDragging) {
+        const deltaX = event.clientX - mouseState.previousX;
+        const deltaY = event.clientY - mouseState.previousY;
+        
+        // Check if moved enough to be considered a drag
+        const totalDrag = Math.abs(event.clientX - mouseState.startX) + 
+                         Math.abs(event.clientY - mouseState.startY);
+        
+        if (totalDrag > CONFIG.mouse.minDragDistance) {
+            mouseState.velocityX = deltaX * CONFIG.mouse.sensitivity;
+            mouseState.velocityY = deltaY * CONFIG.mouse.sensitivity;
+            
+            mouseState.rotationY += mouseState.velocityX;
+            mouseState.rotationX += mouseState.velocityY;
+            
+            // Clamp X rotation to avoid flipping
+            mouseState.rotationX = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, mouseState.rotationX));
+        }
+        
+        mouseState.previousX = event.clientX;
+        mouseState.previousY = event.clientY;
+    }
+}
+
+function onMouseUp(event) {
+    if (event.button === 0) {
+        mouseState.isDragging = false;
+        document.body.style.cursor = 'default';
+    }
+}
+
+// Touch support for mobile
+function onTouchStart(event) {
+    if (event.touches.length === 1) {
+        const touch = event.touches[0];
+        mouseState.isDragging = true;
+        mouseState.startX = touch.clientX;
+        mouseState.startY = touch.clientY;
+        mouseState.previousX = touch.clientX;
+        mouseState.previousY = touch.clientY;
+        mouseState.velocityX = 0;
+        mouseState.velocityY = 0;
+        event.preventDefault();
+    }
+}
+
+function onTouchMove(event) {
+    if (mouseState.isDragging && event.touches.length === 1) {
+        const touch = event.touches[0];
+        const deltaX = touch.clientX - mouseState.previousX;
+        const deltaY = touch.clientY - mouseState.previousY;
+        
+        const totalDrag = Math.abs(touch.clientX - mouseState.startX) + 
+                         Math.abs(touch.clientY - mouseState.startY);
+        
+        if (totalDrag > CONFIG.mouse.minDragDistance) {
+            mouseState.velocityX = deltaX * CONFIG.mouse.sensitivity;
+            mouseState.velocityY = deltaY * CONFIG.mouse.sensitivity;
+            
+            mouseState.rotationY += mouseState.velocityX;
+            mouseState.rotationX += mouseState.velocityY;
+            
+            mouseState.rotationX = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, mouseState.rotationX));
+        }
+        
+        mouseState.previousX = touch.clientX;
+        mouseState.previousY = touch.clientY;
+        event.preventDefault();
+    }
+}
+
+function onTouchEnd(event) {
+    mouseState.isDragging = false;
+}
+
+// Attach mouse event listeners
+window.addEventListener('mousedown', onMouseDown);
+window.addEventListener('mousemove', onMouseMove);
+window.addEventListener('mouseup', onMouseUp);
+
+// Attach touch event listeners for mobile
+window.addEventListener('touchstart', onTouchStart, { passive: false });
+window.addEventListener('touchmove', onTouchMove, { passive: false });
+window.addEventListener('touchend', onTouchEnd);
+
 // FPS counter
 const fpsCounter = document.getElementById('fps-counter');
 let frameCount = 0;
@@ -373,7 +493,31 @@ function animate() {
     // Rotate the model if it's loaded
     if (model) {
         try {
-            model.rotation.y += delta * CONFIG.rotation.speed;
+            // Apply inertia when not dragging
+            if (!mouseState.isDragging) {
+                // Apply damping to velocities
+                mouseState.velocityX *= CONFIG.rotation.inertia;
+                mouseState.velocityY *= CONFIG.rotation.inertia;
+                
+                // Apply remaining velocity
+                mouseState.rotationY += mouseState.velocityX;
+                mouseState.rotationX += mouseState.velocityY;
+                
+                // Gradually return to default rotation
+                mouseState.rotationX *= (1 - CONFIG.rotation.returnSpeed);
+                mouseState.rotationY *= (1 - CONFIG.rotation.returnSpeed);
+                
+                // Stop applying velocity when it's very small
+                if (Math.abs(mouseState.velocityX) < 0.0001) mouseState.velocityX = 0;
+                if (Math.abs(mouseState.velocityY) < 0.0001) mouseState.velocityY = 0;
+            }
+            
+            // Continue default auto-rotation
+            mouseState.defaultRotationY += delta * CONFIG.rotation.speed;
+            
+            // Apply combined rotation: default + user interaction
+            model.rotation.y = mouseState.defaultRotationY + mouseState.rotationY;
+            model.rotation.x = mouseState.rotationX;
             
             if (CONFIG.ps1Style) {
                 // Apply PS1-style vertex jitter/wobble

@@ -3,10 +3,17 @@ body {
     overflow: hidden;
     width: 100vw;
     height: 100vh;
+    cursor: grab;
+    user-select: none;
+}
+
+body:active {
+    cursor: grabbing;
 }
 
 canvas { 
-    display: block; 
+    display: block;
+    touch-action: none;
 }
 
 #loading {
