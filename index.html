@@ -18,9 +18,39 @@
         canvas { 
             display: block; 
         }
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            text-align: center;
+            font-family: Arial, sans-serif;
+            color: white;
+        }
+        #progress-bar {
+            width: 100%;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.2);
+            margin-top: 10px;
+            border-radius: 1px;
+            overflow: hidden;
+        }
+        #progress-fill {
+            width: 0%;
+            height: 100%;
+            background: white;
+            transition: width 0.1s ease;
+        }
     </style>
 </head>
 <body>
+    <div id="loading">
+        <div>Loading...</div>
+        <div id="progress-bar">
+            <div id="progress-fill"></div>
+        </div>
+    </div>
     <script type="importmap">
         {
             "imports": {
@@ -148,6 +178,9 @@
         const loader = new FBXLoader();
         let model;
 
+        const loadingEl = document.getElementById('loading');
+        const progressFill = document.getElementById('progress-fill');
+
         loader.load(
             'assets/models/tarelka.fbx',
             function (object) {
@@ -166,12 +199,28 @@
                 model.position.sub(center);
                 
                 scene.add(model);
+
+                // Hide loading UI
+                if (loadingEl) {
+                    loadingEl.style.display = 'none';
+                }
             },
-            undefined,
+            function (xhr) {
+                // Update progress bar
+                if (xhr.lengthComputable && progressFill) {
+                    const percentComplete = (xhr.loaded / xhr.total) * 100;
+                    progressFill.style.width = percentComplete + '%';
+                }
+            },
             function (error) {
                 // Handle error silently in production
                 // Development: uncomment the line below
                 // console.error('An error occurred loading the model:', error);
+                
+                // Show error in loading UI
+                if (loadingEl) {
+                    loadingEl.innerHTML = '<div>Failed to load model</div>';
+                }
             }
         );
 
