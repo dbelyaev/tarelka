@@ -530,8 +530,8 @@ function animate() {
                 mouseState.rotationY *= (1 - CONFIG.rotation.returnSpeed);
                 
                 // Stop applying velocity when it's very small
-                if (Math.abs(mouseState.velocityX) < 0.0001) mouseState.velocityX = 0;
-                if (Math.abs(mouseState.velocityY) < 0.0001) mouseState.velocityY = 0;
+                if (Math.abs(mouseState.velocityX) < 0.00001) mouseState.velocityX = 0;
+                if (Math.abs(mouseState.velocityY) < 0.00001) mouseState.velocityY = 0;
             }
             
             // Continue default auto-rotation
