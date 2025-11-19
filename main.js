@@ -453,6 +453,23 @@ window.addEventListener('touchstart', onTouchStart, { passive: false });
 window.addEventListener('touchmove', onTouchMove, { passive: false });
 window.addEventListener('touchend', onTouchEnd);
 
+/**
+ * Cleanup function to remove all event listeners
+ * Call this if the app needs to be unloaded or reinitialized
+ */
+function cleanup() {
+    window.removeEventListener('mousedown', onMouseDown);
+    window.removeEventListener('mousemove', onMouseMove);
+    window.removeEventListener('mouseup', onMouseUp);
+    window.removeEventListener('touchstart', onTouchStart);
+    window.removeEventListener('touchmove', onTouchMove);
+    window.removeEventListener('touchend', onTouchEnd);
+    window.removeEventListener('resize', debounce(onWindowResize, CONFIG.resize.debounceMs));
+}
+
+// Expose cleanup function globally if needed
+window.cleanupThreeJS = cleanup;
+
 // FPS counter
 const fpsCounter = document.getElementById('fps-counter');
 let frameCount = 0;
