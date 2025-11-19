@@ -243,6 +243,18 @@
                             
                             // Reduce color precision (color banding effect)
                             child.material.dithering = false;
+                        } else {
+                            // Restore smooth rendering for non-PS1 mode
+                            child.material.flatShading = false;
+                            
+                            // Restore smooth texture filtering
+                            if (child.material.map) {
+                                child.material.map.minFilter = THREE.LinearMipmapLinearFilter;
+                                child.material.map.magFilter = THREE.LinearFilter;
+                                child.material.map.generateMipmaps = true;
+                            }
+                            
+                            child.material.dithering = false;
                         }
                         
                         child.material.needsUpdate = true;
