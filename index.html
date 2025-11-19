@@ -68,6 +68,7 @@
         // Configuration
         const CONFIG = {
             ps1Style: true, // Enable PS1 graphics style
+            ps1PixelScale: 2, // PS1 pixelation level (higher = less pixelated, 1 = no pixelation)
             rotation: {
                 speed: 0.5
             },
@@ -119,7 +120,7 @@
         });
         
         // PS1-style low resolution (scale down for pixelated look)
-        const pixelScale = CONFIG.ps1Style ? 2 : 1; // Lower = more pixelated
+        const pixelScale = CONFIG.ps1Style ? CONFIG.ps1PixelScale : 1;
         renderer.setSize(
             window.innerWidth / pixelScale, 
             window.innerHeight / pixelScale
@@ -335,7 +336,7 @@
             camera.updateProjectionMatrix();
             
             // Maintain PS1-style low resolution if enabled
-            const pixelScale = CONFIG.ps1Style ? 2 : 1;
+            const pixelScale = CONFIG.ps1Style ? CONFIG.ps1PixelScale : 1;
             renderer.setSize(
                 window.innerWidth / pixelScale, 
                 window.innerHeight / pixelScale
