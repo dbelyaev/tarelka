@@ -3,8 +3,24 @@
 # https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file#package-ecosystem
 
 version: 2
+
 updates:
   - package-ecosystem: "github-actions"
+    open-pull-requests-limit: 10
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "sunday"
+    cooldown:
+      default-days: 5
+    commit-message:
+      prefix: chore
+      include: scope
+    labels:
+      - github-actions
+      - dependencies
+    groups:
+      github-actions:
+        patterns:
+          # use wildcard to bundle plugins and libs into one PR
+          - "*"
