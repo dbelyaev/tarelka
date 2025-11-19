@@ -440,7 +440,10 @@ function onTouchMove(event) {
 }
 
 function onTouchEnd(event) {
-    mouseState.isDragging = false;
+    if (mouseState.isDragging) {
+        mouseState.isDragging = false;
+        event.preventDefault();
+    }
 }
 
 // Attach mouse event listeners
@@ -451,7 +454,7 @@ window.addEventListener('mouseup', onMouseUp);
 // Attach touch event listeners for mobile
 window.addEventListener('touchstart', onTouchStart, { passive: false });
 window.addEventListener('touchmove', onTouchMove, { passive: false });
-window.addEventListener('touchend', onTouchEnd);
+window.addEventListener('touchend', onTouchEnd, { passive: false });
 
 /**
  * Cleanup function to remove all event listeners
