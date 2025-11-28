@@ -554,8 +554,10 @@ if (CONFIG.showFPS && fpsCounter) {
 }
 
 // Animation loop
+let animationId;
+
 function animate() {
-    requestAnimationFrame(animate);
+    animationId = requestAnimationFrame(animate);
 
     const delta = clock.getDelta();
     
@@ -687,5 +689,18 @@ function debounce(func, wait) {
 
 // Attach the resize event listener with debouncing
 window.addEventListener('resize', debounce(onWindowResize, CONFIG.resize.debounceMs));
+
+// Pause/resume animation when tab visibility changes (performance optimization)
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        // Pause animation when tab is hidden
+        if (animationId) {
+            cancelAnimationFrame(animationId);
+        }
+    } else {
+        // Resume animation when tab becomes visible
+        animate();
+    }
+});
 
 animate();
