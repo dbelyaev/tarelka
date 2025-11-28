@@ -1,6 +1,38 @@
 import * as THREE from 'three';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 
+/**
+ * Check if the browser supports WebGL
+ * @returns {boolean} True if WebGL is supported, false otherwise
+ */
+function checkWebGLSupport() {
+    try {
+        const canvas = document.createElement('canvas');
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        return !!(window.WebGLRenderingContext && gl);
+    } catch(e) {
+        return false;
+    }
+}
+
+// Check WebGL support before initializing
+if (!checkWebGLSupport()) {
+    document.body.innerHTML = `
+        <div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);max-width:500px;text-align:center;padding:30px;color:white;background:rgba(0,0,0,0.9);border-radius:12px;font-family:Arial,sans-serif;box-shadow:0 4px 20px rgba(0,0,0,0.5);">
+            <div style="font-size:48px;margin-bottom:20px;">⚠️</div>
+            <div style="font-size:22px;margin-bottom:15px;font-weight:bold;">WebGL Not Supported</div>
+            <div style="font-size:14px;line-height:1.6;color:#ccc;margin-bottom:20px;">
+                Your browser doesn't support WebGL, which is required to view this 3D content.
+            </div>
+            <div style="font-size:13px;color:#999;line-height:1.5;">
+                Please update to a modern browser:<br>
+                <strong style="color:#fff;">Chrome, Firefox, Safari, or Edge</strong>
+            </div>
+        </div>
+    `;
+    throw new Error('WebGL not supported');
+}
+
 // Configuration
 const CONFIG = {
     ps1Style: localStorage.getItem('ps1Style') !== 'false', // Enable PS1 graphics style (persisted in localStorage)
