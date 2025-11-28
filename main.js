@@ -279,9 +279,17 @@ function loadModel(attemptNumber = 1) {
         function (xhr) {
             // Update progress bar
             const progressFillEl = document.getElementById('progress-fill');
+            const progressBarEl = document.getElementById('progress-bar');
             if (xhr.lengthComputable && progressFillEl) {
                 const percentComplete = (xhr.loaded / xhr.total) * 100;
                 progressFillEl.style.width = percentComplete + '%';
+                
+                // Update ARIA attributes for accessibility
+                if (progressBarEl) {
+                    progressBarEl.setAttribute('aria-valuenow', Math.round(percentComplete));
+                    progressBarEl.setAttribute('aria-valuemin', '0');
+                    progressBarEl.setAttribute('aria-valuemax', '100');
+                }
             }
         },
         function (error) {
