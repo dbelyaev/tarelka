@@ -457,10 +457,53 @@ window.addEventListener('touchmove', onTouchMove, { passive: false });
 window.addEventListener('touchend', onTouchEnd, { passive: false });
 
 /**
- * Cleanup function to remove all event listeners
+ * Cleanup function to remove all event listeners and dispose of Three.js resources
  * Call this if the app needs to be unloaded or reinitialized
  */
 function cleanup() {
+    // Dispose of model geometries and materials
+    if (model) {
+        model.traverse((child) => {
+            if (child.isMesh) {
+                // Dispose geometry
+                if (child.geometry) {
+                    child.geometry.dispose();
+                }
+                
+                // Dispose materials (handle both single and array of materials)
+                if (child.material) {
+                    if (Array.isArray(child.material)) {
+                        child.material.forEach(mat => {
+                            disposeMaterial(mat);
+                        });
+                    } else {
+                        disposeMaterial(child.material);
+                    }
+                }
+            }
+        });
+        
+        // Remove model from scene
+        scene.remove(model);
+        model = null;
+    }
+    
+    // Dispose background materials and geometries
+    if (backgroundMesh) {
+        if (backgroundMesh.geometry) {
+            backgroundMesh.geometry.dispose();
+        }
+        if (backgroundMesh.material) {
+            disposeMaterial(backgroundMesh.material);
+        }
+    }
+    
+    // Dispose renderer
+    if (renderer) {
+        renderer.dispose();
+    }
+    
+    // Remove event listeners
     window.removeEventListener('mousedown', onMouseDown);
     window.removeEventListener('mousemove', onMouseMove);
     window.removeEventListener('mouseup', onMouseUp);
@@ -468,6 +511,32 @@ function cleanup() {
     window.removeEventListener('touchmove', onTouchMove);
     window.removeEventListener('touchend', onTouchEnd);
     window.removeEventListener('resize', debounce(onWindowResize, CONFIG.resize.debounceMs));
+}
+
+/**
+ * Helper function to properly dispose of a Three.js material and its textures
+ * @param {THREE.Material} material - The material to dispose
+ */
+function disposeMaterial(material) {
+    if (!material) return;
+    
+    // Dispose all textures in the material
+    if (material.map) material.map.dispose();
+    if (material.lightMap) material.lightMap.dispose();
+    if (material.bumpMap) material.bumpMap.dispose();
+    if (material.normalMap) material.normalMap.dispose();
+    if (material.specularMap) material.specularMap.dispose();
+    if (material.envMap) material.envMap.dispose();
+    if (material.alphaMap) material.alphaMap.dispose();
+    if (material.aoMap) material.aoMap.dispose();
+    if (material.displacementMap) material.displacementMap.dispose();
+    if (material.emissiveMap) material.emissiveMap.dispose();
+    if (material.gradientMap) material.gradientMap.dispose();
+    if (material.metalnessMap) material.metalnessMap.dispose();
+    if (material.roughnessMap) material.roughnessMap.dispose();
+    
+    // Dispose the material itself
+    material.dispose();
 }
 
 // Expose cleanup function globally if needed
