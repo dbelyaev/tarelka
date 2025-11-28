@@ -3,7 +3,7 @@ import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 
 // Configuration
 const CONFIG = {
-    ps1Style: true, // Enable PS1 graphics style
+    ps1Style: localStorage.getItem('ps1Style') !== 'false', // Enable PS1 graphics style (persisted in localStorage)
     ps1PixelScale: 2, // PS1 pixelation level (higher = less pixelated, 1 = no pixelation)
     ps1Jitter: 0.002, // PS1 vertex wobble intensity (higher = more jitter)
     modelRetryAttempts: 3, // Number of times to retry loading the model
@@ -689,6 +689,23 @@ function debounce(func, wait) {
 
 // Attach the resize event listener with debouncing
 window.addEventListener('resize', debounce(onWindowResize, CONFIG.resize.debounceMs));
+
+// Keyboard toggle for PS1 style (press 'P' key)
+window.addEventListener('keydown', (e) => {
+    if (e.key === 'p' || e.key === 'P') {
+        CONFIG.ps1Style = !CONFIG.ps1Style;
+        localStorage.setItem('ps1Style', CONFIG.ps1Style);
+        
+        // Show notification
+        const notification = document.createElement('div');
+        notification.textContent = `PS1 Style: ${CONFIG.ps1Style ? 'ON' : 'OFF'} (reloading...)`;
+        notification.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:white;padding:12px 24px;border-radius:6px;font-family:Arial,sans-serif;font-size:14px;z-index:10000;';
+        document.body.appendChild(notification);
+        
+        // Reload page to apply WebGL context changes
+        setTimeout(() => location.reload(), 800);
+    }
+});
 
 // Pause/resume animation when tab visibility changes (performance optimization)
 document.addEventListener('visibilitychange', () => {
