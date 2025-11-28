@@ -338,32 +338,47 @@ function loadModel(attemptNumber = 1) {
             } else {
                 // All retry attempts exhausted
                 if (loadingEl) {
-                    loadingEl.textContent = '';
+                    loadingEl.innerHTML = '';
+                    loadingEl.className = 'error-container';
                     
-                    // Create error message elements
+                    // Create error icon
+                    const errorIcon = document.createElement('div');
+                    errorIcon.className = 'error-icon';
+                    errorIcon.textContent = '⚠️';
+                    
+                    // Create error title
                     const errorTitle = document.createElement('div');
-                    errorTitle.style.color = '#ff6b6b';
-                    errorTitle.textContent = 'Failed to load model';
+                    errorTitle.className = 'error-title';
+                    errorTitle.textContent = 'Failed to Load 3D Model';
                     
+                    // Create error details
                     const errorDetails = document.createElement('div');
-                    errorDetails.style.fontSize = '12px';
-                    errorDetails.style.marginTop = '10px';
-                    errorDetails.textContent = error.message || 'Please check your connection and refresh the page';
+                    errorDetails.className = 'error-details';
+                    errorDetails.textContent = error.message || 'The 3D model could not be loaded after multiple attempts.';
                     
+                    // Create actionable steps
+                    const errorSteps = document.createElement('div');
+                    errorSteps.className = 'error-steps';
+                    errorSteps.innerHTML = `
+                        <strong style="color: #fff;">Troubleshooting steps:</strong>
+                        <ul style="margin: 8px 0; padding-left: 20px;">
+                            <li>Check your internet connection</li>
+                            <li>Try refreshing the page</li>
+                            <li>Clear your browser cache</li>
+                            <li>Try a different browser</li>
+                        </ul>
+                    `;
+                    
+                    // Create retry button
                     const retryButton = document.createElement('button');
-                    retryButton.id = 'retry-button';
-                    retryButton.style.marginTop = '15px';
-                    retryButton.style.padding = '8px 16px';
-                    retryButton.style.background = 'white';
-                    retryButton.style.border = 'none';
-                    retryButton.style.borderRadius = '4px';
-                    retryButton.style.cursor = 'pointer';
-                    retryButton.style.fontFamily = 'Arial, sans-serif';
-                    retryButton.textContent = 'Retry';
+                    retryButton.className = 'retry-button';
+                    retryButton.textContent = '🔄 Retry Loading';
                     retryButton.addEventListener('click', () => location.reload());
                     
+                    loadingEl.appendChild(errorIcon);
                     loadingEl.appendChild(errorTitle);
                     loadingEl.appendChild(errorDetails);
+                    loadingEl.appendChild(errorSteps);
                     loadingEl.appendChild(retryButton);
                 }
             }

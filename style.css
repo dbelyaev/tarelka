@@ -58,3 +58,65 @@ canvas {
     z-index: 1000;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
+
+.error-container {
+    padding: 25px;
+    max-width: 400px;
+    background: rgba(0, 0, 0, 0.9);
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.error-icon {
+    font-size: 42px;
+    margin-bottom: 15px;
+}
+
+.error-title {
+    color: #ff6b6b;
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 12px;
+}
+
+.error-details {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #ccc;
+    margin-bottom: 15px;
+}
+
+.error-steps {
+    text-align: left;
+    font-size: 13px;
+    color: #aaa;
+    margin-bottom: 20px;
+    line-height: 1.8;
+}
+
+.error-steps li {
+    margin-bottom: 8px;
+}
+
+.retry-button {
+    padding: 10px 24px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    font-weight: bold;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.retry-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5);
+}
+
+.retry-button:active {
+    transform: translateY(0);
+}
