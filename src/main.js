@@ -63,8 +63,8 @@ function initializeApp() {
     // Model reference
     let model = null;
 
-    // Setup context handlers (pass model reference)
-    setupContextHandlers(renderer, model);
+    // Setup context handlers (pass scene and camera for proper restoration)
+    setupContextHandlers(renderer, scene, camera);
 
     // Load the model
     loadModel(scene, (loadedModel) => {

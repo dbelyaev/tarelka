@@ -40,28 +40,22 @@ export function createRenderer() {
 /**
  * Set up WebGL context loss and restoration handlers
  * @param {THREE.WebGLRenderer} renderer
- * @param {Object} model - Reference to the model object
+ * @param {THREE.Scene} scene - The scene to re-render
+ * @param {THREE.Camera} camera - The camera to use for rendering
  */
-export function setupContextHandlers(renderer, model) {
+export function setupContextHandlers(renderer, scene, camera) {
     renderer.domElement.addEventListener('webglcontextlost', function(event) {
         event.preventDefault();
         console.warn('WebGL context lost. Attempting to restore...');
-        const loadingEl = document.getElementById('loading');
-        if (loadingEl) {
-            loadingEl.style.display = 'block';
-            loadingEl.textContent = 'Graphics context lost. Restoring...';
-        }
     }, false);
     
     renderer.domElement.addEventListener('webglcontextrestored', function() {
-        console.log('WebGL context restored.');
+        console.log('WebGL context restored successfully.');
+        
+        // Hide any loading message if it's showing
         const loadingEl = document.getElementById('loading');
-        if (loadingEl && model) {
+        if (loadingEl && loadingEl.style.display !== 'none') {
             loadingEl.style.display = 'none';
-        }
-        // Re-render scene after context restoration
-        if (model) {
-            renderer.render(scene, camera);
         }
     }, false);
 }
