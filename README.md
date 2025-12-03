@@ -24,6 +24,7 @@ tarelka/
 │   ├── renderer.js     # WebGL renderer configuration
 │   ├── loader.js       # Model loading with retry logic
 │   ├── controls.js     # Mouse and touch interaction
+│   ├── snow.js         # Snow effect with parallax layers
 │   └── utils.js        # Utility functions
 ├── assets/
 │   ├── models/         # 3D models
@@ -41,7 +42,22 @@ tarelka/
 - **`src/renderer.js`** - WebGL renderer configuration, context handlers, resize handling
 - **`src/loader.js`** - Model loading with retry logic, progress tracking, error handling
 - **`src/controls.js`** - Mouse and touch events, rotation with inertia, drag-to-rotate
+- **`src/snow.js`** - Animated snow effect with 3 parallax layers for depth
 - **`src/utils.js`** - WebGL support check, debounce function, material disposal
+
+## Features
+
+- **Interactive 3D Model** - Drag to rotate, inertia-based movement
+- **PS1 Graphics Mode** - Retro PlayStation 1 style rendering (press **P** to toggle)
+- **Snow Effect** - Falling snowflakes with parallax layers (press **S** to toggle)
+- **Touch Support** - Full mobile and tablet support
+- **Responsive Design** - Adapts to any screen size
+- **WebGL Optimization** - Pauses rendering when tab is inactive
+
+## Keyboard Controls
+
+- **P** - Toggle PS1 graphics style (requires page reload)
+- **S** - Toggle snow effect on/off
 
 # Attributions
 

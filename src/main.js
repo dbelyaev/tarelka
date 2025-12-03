@@ -8,6 +8,7 @@ import { createScene, createBackgroundScene, setupLighting, createCamera } from 
 import { createRenderer, setupContextHandlers, onWindowResize } from './renderer.js';
 import { loadModel } from './loader.js';
 import { initializeControls, updateRotation } from './controls.js';
+import { SnowEffect } from './snow.js';
 
 // Check WebGL support before initializing
 if (!checkWebGLSupport()) {
@@ -35,6 +36,9 @@ const renderer = createRenderer();
 
 setupLighting(scene);
 document.body.appendChild(renderer.domElement);
+
+// Initialize snow effect
+const snowEffect = new SnowEffect();
 
 // Initialize controls
 const { mouseState, cleanup: cleanupControls } = initializeControls();
@@ -88,6 +92,9 @@ function animate() {
         }
     }
     
+    // Update snow effect
+    snowEffect.update(delta);
+    
     // Clear and render
     renderer.clear();
     renderer.render(backgroundScene, backgroundCamera);
@@ -111,6 +118,9 @@ function animate() {
     } catch (renderError) {
         console.error('Render error:', renderError);
     }
+    
+    // Draw snow effect on top
+    snowEffect.draw();
 }
 
 /**
@@ -157,6 +167,9 @@ function cleanup() {
     // Remove controls event listeners
     cleanupControls();
     
+    // Cleanup snow effect
+    snowEffect.cleanup();
+    
     // Remove resize listener
     window.removeEventListener('resize', debouncedResize);
 }
@@ -168,7 +181,7 @@ window.cleanupThreeJS = cleanup;
 const debouncedResize = debounce(() => onWindowResize(camera, renderer), CONFIG.resize.debounceMs);
 window.addEventListener('resize', debouncedResize);
 
-// Keyboard toggle for PS1 style
+// Keyboard toggle for PS1 style and snow effect
 window.addEventListener('keydown', (e) => {
     if (e.key === 'p' || e.key === 'P') {
         CONFIG.ps1Style = !CONFIG.ps1Style;
@@ -180,6 +193,17 @@ window.addEventListener('keydown', (e) => {
         document.body.appendChild(notification);
         
         setTimeout(() => location.reload(), 800);
+    }
+    
+    if (e.key === 's' || e.key === 'S') {
+        snowEffect.toggle();
+        
+        const notification = document.createElement('div');
+        notification.textContent = `Snow Effect: ${snowEffect.enabled ? 'ON' : 'OFF'}`;
+        notification.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:white;padding:12px 24px;border-radius:6px;font-family:Arial,sans-serif;font-size:14px;z-index:10000;';
+        document.body.appendChild(notification);
+        
+        setTimeout(() => notification.remove(), 2000);
     }
 });
 
