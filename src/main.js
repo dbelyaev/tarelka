@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import { CONFIG } from './config.js';
 import { checkWebGLSupport, debounce, disposeMaterial } from './utils.js';
 import { createScene, createBackgroundScene, setupLighting, createCamera } from './scene.js';
-import { createRenderer, setupContextHandlers, onWindowResize } from './renderer.js';
+import { createRenderer, setupContextHandlers, onWindowResize, logRendererInfo } from './renderer.js';
 import { loadModel } from './loader.js';
 import { initializeControls, updateRotation } from './controls.js';
 import { SnowEffect } from './snow.js';
@@ -83,6 +83,23 @@ function initializeApp() {
 
     if (CONFIG.showFPS && fpsCounter) {
         fpsCounter.style.display = 'block';
+    }
+
+    // Debug monitoring interval
+    let debugInterval = null;
+    function startDebugMonitoring() {
+        if (debugInterval) return;
+        debugInterval = setInterval(() => logRendererInfo(renderer), 5000);
+        logRendererInfo(renderer);
+    }
+    function stopDebugMonitoring() {
+        if (debugInterval) {
+            clearInterval(debugInterval);
+            debugInterval = null;
+        }
+    }
+    if (CONFIG.debug) {
+        startDebugMonitoring();
     }
 
     /**
@@ -190,6 +207,9 @@ function initializeApp() {
         // Cleanup snow effect
         snowEffect.cleanup();
         
+        // Stop debug monitoring
+        stopDebugMonitoring();
+        
         // Remove resize listener
         window.removeEventListener('resize', debouncedResize);
     }
@@ -226,6 +246,15 @@ function initializeApp() {
             document.body.appendChild(notification);
             
             setTimeout(() => notification.remove(), 2000);
+        }
+        
+        if (e.key === 'd' || e.key === 'D') {
+            CONFIG.debug = !CONFIG.debug;
+            if (CONFIG.debug) {
+                startDebugMonitoring();
+            } else {
+                stopDebugMonitoring();
+            }
         }
     });
 

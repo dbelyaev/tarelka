@@ -8,6 +8,7 @@ export const CONFIG = {
     modelRetryAttempts: 3, // Number of times to retry loading the model
     modelRetryDelay: 2000, // Delay in ms between retry attempts
     showFPS: true, // Show FPS counter
+    debug: false, // Enable debug monitoring (renderer.info)
     rotation: {
         speed: 0.5,
         inertia: 0.95, // Inertia damping factor (0-1, closer to 1 = more inertia)

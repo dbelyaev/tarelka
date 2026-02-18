@@ -85,3 +85,17 @@ export function onWindowResize(camera, renderer) {
         console.error('Resize error:', resizeError);
     }
 }
+
+/**
+ * Log renderer memory and draw call statistics for debugging
+ * @param {THREE.WebGLRenderer} renderer
+ */
+export function logRendererInfo(renderer) {
+    const { memory, render } = renderer.info;
+    console.table({
+        geometries: memory.geometries,
+        textures: memory.textures,
+        drawCalls: render.calls,
+        triangles: render.triangles
+    });
+}
