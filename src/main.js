@@ -126,6 +126,9 @@ function initializeApp() {
                 model.position.x = Math.sin(jitterTime * 10) * CONFIG.ps1Jitter;
                 model.position.y = Math.cos(jitterTime * 15) * CONFIG.ps1Jitter;
                 model.position.z = Math.sin(jitterTime * 12) * CONFIG.ps1Jitter;
+            } else {
+                // Ensure position is zeroed when PS1 mode is off
+                model.position.set(0, 0, 0);
             }
         }
         
