@@ -231,9 +231,14 @@ function initializeApp() {
         if (document.hidden) {
             if (animationId) {
                 cancelAnimationFrame(animationId);
+                animationId = null;
             }
         } else {
-            animate();
+            if (!animationId) {
+                // Discard accumulated delta to prevent a large jump on resume
+                clock.getDelta();
+                animate();
+            }
         }
     });
 
