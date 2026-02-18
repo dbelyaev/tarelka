@@ -26,6 +26,7 @@ class Snowflake {
         this.speed = (0.5 + Math.random() * 1) * layerScale;
         this.drift = (Math.random() - 0.5) * 0.5 * layerScale;
         this.opacity = (0.3 + Math.random() * 0.4) * layerScale;
+        this.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
         this.canvasWidth = canvasWidth;
         this.canvasHeight = canvasHeight;
     }
@@ -53,7 +54,7 @@ class Snowflake {
     draw(ctx) {
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+        ctx.fillStyle = this.fillStyle;
         ctx.fill();
     }
 }
@@ -127,9 +128,8 @@ export class SnowEffect {
         // Clear canvas
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
-        // Draw snowflakes sorted by layer (background to foreground)
-        const sortedFlakes = [...this.snowflakes].sort((a, b) => a.layer - b.layer);
-        sortedFlakes.forEach(flake => flake.draw(this.ctx));
+        // Draw snowflakes (already in layer order from createSnowflakes)
+        this.snowflakes.forEach(flake => flake.draw(this.ctx));
     }
     
     toggle() {
