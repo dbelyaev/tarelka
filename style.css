@@ -120,3 +120,21 @@ canvas {
 .retry-button:active {
     transform: translateY(0);
 }
+
+.noscript-fallback {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    padding: 30px;
+    color: white;
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 8px;
+    font-family: Arial, sans-serif;
+}
+
+.noscript-fallback__title {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
