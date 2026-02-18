@@ -40,6 +40,7 @@ function initializeApp() {
 
     setupLighting(scene);
     document.body.appendChild(renderer.domElement);
+    renderer.domElement.setAttribute('aria-hidden', 'true');
 
     // Initialize snow effect
     let snowEffect;

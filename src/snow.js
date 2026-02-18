@@ -80,6 +80,7 @@ export class SnowEffect {
         this.canvas.style.height = '100%';
         this.canvas.style.pointerEvents = 'none';
         this.canvas.style.zIndex = '1000';
+        this.canvas.setAttribute('aria-hidden', 'true');
         
         document.body.appendChild(this.canvas);
         
