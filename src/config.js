@@ -2,7 +2,7 @@
  * Application configuration
  */
 export const CONFIG = {
-    ps1Style: localStorage.getItem('ps1Style') !== 'false', // Enable PS1 graphics style (persisted in localStorage)
+    ps1Style: localStorage.getItem('ps1Style') === 'true', // Enable PS1 graphics style (persisted in localStorage)
     ps1PixelScale: 2, // PS1 pixelation level (higher = less pixelated, 1 = no pixelation)
     ps1Jitter: 0.002, // PS1 vertex wobble intensity (higher = more jitter)
     modelRetryAttempts: 3, // Number of times to retry loading the model
