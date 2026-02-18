@@ -12,8 +12,6 @@ import { SnowEffect } from './snow.js';
 
 // Wait for DOM to be fully loaded
 function initializeApp() {
-    console.log('Initializing application...');
-    
     // Check WebGL support before initializing
     if (!checkWebGLSupport()) {
         document.body.innerHTML = `
@@ -46,7 +44,6 @@ function initializeApp() {
     let snowEffect;
     try {
         snowEffect = new SnowEffect();
-        console.log('Snow effect initialized');
     } catch (error) {
         console.error('Failed to initialize snow effect:', error);
         snowEffect = { 
@@ -222,31 +219,37 @@ function initializeApp() {
     const debouncedResize = debounce(() => onWindowResize(camera, renderer), CONFIG.resize.debounceMs);
     window.addEventListener('resize', debouncedResize);
 
-    // Keyboard toggle for PS1 style and snow effect
+    // Reusable notification element
+    let notificationEl = null;
+    let notificationTimer = null;
+    function showNotification(text, autoRemoveMs = 2000) {
+        if (!notificationEl) {
+            notificationEl = document.createElement('div');
+            notificationEl.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:white;padding:12px 24px;border-radius:6px;font-family:Arial,sans-serif;font-size:14px;z-index:10001;';
+            notificationEl.setAttribute('aria-hidden', 'true');
+        }
+        notificationEl.textContent = text;
+        if (!notificationEl.parentNode) {
+            document.body.appendChild(notificationEl);
+        }
+        clearTimeout(notificationTimer);
+        if (autoRemoveMs > 0) {
+            notificationTimer = setTimeout(() => notificationEl.remove(), autoRemoveMs);
+        }
+    }
+
+    // Keyboard toggle for PS1 style, snow effect, and debug mode
     document.addEventListener('keydown', (e) => {
-        console.log('Key pressed:', e.key); // Debug log
-        
         if (e.key === 'p' || e.key === 'P') {
             CONFIG.ps1Style = !CONFIG.ps1Style;
             localStorage.setItem('ps1Style', CONFIG.ps1Style);
-            
-            const notification = document.createElement('div');
-            notification.textContent = `PS1 Style: ${CONFIG.ps1Style ? 'ON' : 'OFF'} (reloading...)`;
-            notification.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:white;padding:12px 24px;border-radius:6px;font-family:Arial,sans-serif;font-size:14px;z-index:10001;';
-            document.body.appendChild(notification);
-            
+            showNotification(`PS1 Style: ${CONFIG.ps1Style ? 'ON' : 'OFF'} (reloading...)`, 0);
             setTimeout(() => location.reload(), 800);
         }
         
         if (e.key === 's' || e.key === 'S') {
             snowEffect.toggle();
-            
-            const notification = document.createElement('div');
-            notification.textContent = `Snow Effect: ${snowEffect.enabled ? 'ON' : 'OFF'}`;
-            notification.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:white;padding:12px 24px;border-radius:6px;font-family:Arial,sans-serif;font-size:14px;z-index:10001;';
-            document.body.appendChild(notification);
-            
-            setTimeout(() => notification.remove(), 2000);
+            showNotification(`Snow Effect: ${snowEffect.enabled ? 'ON' : 'OFF'}`);
         }
         
         if (e.key === 'd' || e.key === 'D') {
@@ -278,9 +281,6 @@ function initializeApp() {
 // Start animation loop
 animate();
 
-// Expose for debugging
-window.snowEffect = snowEffect;
-console.log('Application initialized successfully');
 }
 
 // Initialize when DOM is ready

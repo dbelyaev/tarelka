@@ -5,6 +5,9 @@ import * as THREE from 'three';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { CONFIG } from './config.js';
 
+// Reuse a single loader instance across retries
+const loader = new FBXLoader();
+
 /**
  * Loads the FBX model with retry logic
  * @param {THREE.Scene} scene - The scene to add the model to
@@ -12,7 +15,6 @@ import { CONFIG } from './config.js';
  * @param {number} attemptNumber - Current attempt number
  */
 export function loadModel(scene, onSuccess, attemptNumber = 1) {
-    const loader = new FBXLoader();
     const loadingEl = document.getElementById('loading');
     
     if (loadingEl && attemptNumber > 1) {
