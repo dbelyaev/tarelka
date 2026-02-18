@@ -1,6 +1,8 @@
 /**
  * Snow effect with parallax layers
  */
+import { CONFIG } from './config.js';
+import { isSnowSeason } from './utils.js';
 
 /**
  * Snowflake class
@@ -64,7 +66,10 @@ export class SnowEffect {
         this.canvas = document.createElement('canvas');
         this.ctx = this.canvas.getContext('2d');
         this.snowflakes = [];
-        this.enabled = true;
+        
+        // Determine snow enabled state: respect user preference, fall back to seasonal default
+        const stored = localStorage.getItem('snowEnabled');
+        this.enabled = stored !== null ? stored === 'true' : isSnowSeason(CONFIG.snow.winterMonths);
         
         // Style canvas
         this.canvas.style.position = 'fixed';
@@ -129,6 +134,7 @@ export class SnowEffect {
     
     toggle() {
         this.enabled = !this.enabled;
+        localStorage.setItem('snowEnabled', this.enabled);
         if (!this.enabled) {
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         }

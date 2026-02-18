@@ -30,6 +30,9 @@ export const CONFIG = {
         point: { intensity: 1.5, position: { x: 0, y: 3, z: 0 } },
         top: { intensity: 1.5, position: { x: 0, y: 5, z: 0 } }
     },
+    snow: {
+        winterMonths: [12, 1] // Months when snow is enabled by default (Dec–Jan)
+    },
     resize: {
         debounceMs: 100
     },

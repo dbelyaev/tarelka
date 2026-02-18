@@ -32,6 +32,16 @@ export function debounce(func, wait) {
 }
 
 /**
+ * Check if the current month falls within the configured winter months
+ * @param {number[]} winterMonths - Array of month numbers (1-12)
+ * @returns {boolean} True if current month is in the winter months array
+ */
+export function isSnowSeason(winterMonths) {
+    const currentMonth = new Date().getMonth() + 1;
+    return winterMonths.includes(currentMonth);
+}
+
+/**
  * Helper function to properly dispose of a Three.js material and its textures
  * @param {THREE.Material} material - The material to dispose
  */
