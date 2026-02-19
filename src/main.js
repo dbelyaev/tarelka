@@ -37,7 +37,8 @@ function initializeApp() {
     const renderer = createRenderer();
 
     setupLighting(scene);
-    document.body.appendChild(renderer.domElement);
+    const mainEl = document.querySelector('main');
+    mainEl.appendChild(renderer.domElement);
     renderer.domElement.setAttribute('aria-hidden', 'true');
 
     // Initialize snow effect
@@ -238,14 +239,14 @@ function initializeApp() {
     function showNotification(text, autoRemoveMs = 2000) {
         if (!notificationEl) {
             notificationEl = document.createElement('div');
-            notificationEl.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:white;padding:12px 24px;border-radius:6px;font-family:Arial,sans-serif;font-size:14px;z-index:10001;';
+            notificationEl.className = 'notification';
             notificationEl.setAttribute('role', 'status');
             notificationEl.setAttribute('aria-live', 'polite');
             notificationEl.setAttribute('aria-atomic', 'true');
         }
         notificationEl.textContent = text;
         if (!notificationEl.parentNode) {
-            document.body.appendChild(notificationEl);
+            mainEl.appendChild(notificationEl);
         }
         clearTimeout(notificationTimer);
         if (autoRemoveMs > 0) {

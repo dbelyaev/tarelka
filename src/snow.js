@@ -73,16 +73,10 @@ export class SnowEffect {
         this.enabled = stored !== null ? stored === 'true' : isSnowSeason(CONFIG.snow.winterMonths);
         
         // Style canvas
-        this.canvas.style.position = 'fixed';
-        this.canvas.style.top = '0';
-        this.canvas.style.left = '0';
-        this.canvas.style.width = '100%';
-        this.canvas.style.height = '100%';
-        this.canvas.style.pointerEvents = 'none';
-        this.canvas.style.zIndex = '1000';
+        this.canvas.className = 'snow-canvas';
         this.canvas.setAttribute('aria-hidden', 'true');
         
-        document.body.appendChild(this.canvas);
+        document.querySelector('main').appendChild(this.canvas);
         
         this.resize();
         this.createSnowflakes();
