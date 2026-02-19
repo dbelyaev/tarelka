@@ -58,6 +58,7 @@ tarelka/
 
 - **P** - Toggle PS1 graphics style (requires page reload)
 - **S** - Toggle snow effect on/off
+- **D** - Toggle debug mode (shows renderer statistics in console)
 
 # Attributions
 

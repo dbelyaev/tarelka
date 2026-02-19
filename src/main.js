@@ -141,9 +141,6 @@ function initializeApp() {
                 model.position.x = Math.sin(jitterTime * 10) * CONFIG.ps1Jitter;
                 model.position.y = Math.cos(jitterTime * 15) * CONFIG.ps1Jitter;
                 model.position.z = Math.sin(jitterTime * 12) * CONFIG.ps1Jitter;
-            } else {
-                // Ensure position is zeroed when PS1 mode is off
-                model.position.set(0, 0, 0);
             }
         }
         
@@ -208,8 +205,24 @@ function initializeApp() {
         // Stop debug monitoring
         stopDebugMonitoring();
         
+        // Clear notification timer and remove notification element
+        if (notificationTimer) {
+            clearTimeout(notificationTimer);
+            notificationTimer = null;
+        }
+        if (notificationEl && notificationEl.parentNode) {
+            notificationEl.remove();
+            notificationEl = null;
+        }
+        
         // Remove resize listener
         window.removeEventListener('resize', debouncedResize);
+        
+        // Remove feature toggle keyboard listener
+        document.removeEventListener('keydown', keydownHandler);
+        
+        // Remove visibility change listener
+        document.removeEventListener('visibilitychange', visibilityChangeHandler);
     }
 
     // Expose cleanup function globally
@@ -226,7 +239,9 @@ function initializeApp() {
         if (!notificationEl) {
             notificationEl = document.createElement('div');
             notificationEl.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:white;padding:12px 24px;border-radius:6px;font-family:Arial,sans-serif;font-size:14px;z-index:10001;';
-            notificationEl.setAttribute('aria-hidden', 'true');
+            notificationEl.setAttribute('role', 'status');
+            notificationEl.setAttribute('aria-live', 'polite');
+            notificationEl.setAttribute('aria-atomic', 'true');
         }
         notificationEl.textContent = text;
         if (!notificationEl.parentNode) {
@@ -239,7 +254,7 @@ function initializeApp() {
     }
 
     // Keyboard toggle for PS1 style, snow effect, and debug mode
-    document.addEventListener('keydown', (e) => {
+    const keydownHandler = (e) => {
         if (e.key === 'p' || e.key === 'P') {
             CONFIG.ps1Style = !CONFIG.ps1Style;
             localStorage.setItem('ps1Style', CONFIG.ps1Style);
@@ -259,11 +274,13 @@ function initializeApp() {
             } else {
                 stopDebugMonitoring();
             }
+            showNotification(`Debug Mode: ${CONFIG.debug ? 'ON' : 'OFF'}`);
         }
-    });
+    };
+    document.addEventListener('keydown', keydownHandler);
 
     // Pause/resume animation when tab visibility changes
-    document.addEventListener('visibilitychange', () => {
+    const visibilityChangeHandler = () => {
         if (document.hidden) {
             if (animationId) {
                 cancelAnimationFrame(animationId);
@@ -276,7 +293,8 @@ function initializeApp() {
                 animate();
             }
         }
-    });
+    };
+    document.addEventListener('visibilitychange', visibilityChangeHandler);
 
 // Start animation loop
 animate();

@@ -32,7 +32,7 @@ export const CONFIG = {
         top: { intensity: 1.5, position: { x: 0, y: 5, z: 0 } }
     },
     snow: {
-        winterMonths: [12, 1] // Months when snow is enabled by default (Dec–Jan)
+        winterMonths: [12, 1] // Months when snow is enabled by default (1-indexed: 12=Dec, 1=Jan)
     },
     resize: {
         debounceMs: 100
