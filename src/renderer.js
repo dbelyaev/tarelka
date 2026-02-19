@@ -22,9 +22,7 @@ export function createRenderer() {
     );
     
     if (CONFIG.ps1Style) {
-        renderer.domElement.style.width = window.innerWidth + 'px';
-        renderer.domElement.style.height = window.innerHeight + 'px';
-        renderer.domElement.style.imageRendering = 'pixelated'; // CSS for sharp pixels
+        renderer.domElement.classList.add('renderer--ps1');
         renderer.setPixelRatio(1); // Force 1:1 pixel ratio for PS1 look
     } else {
         renderer.setPixelRatio(window.devicePixelRatio);
@@ -78,8 +76,7 @@ export function onWindowResize(camera, renderer) {
         );
         
         if (CONFIG.ps1Style) {
-            renderer.domElement.style.width = window.innerWidth + 'px';
-            renderer.domElement.style.height = window.innerHeight + 'px';
+            renderer.domElement.classList.add('renderer--ps1');
         }
     } catch (resizeError) {
         console.error('Resize error:', resizeError);

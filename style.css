@@ -59,6 +59,59 @@ canvas {
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
+#fps-counter.visible {
+    display: block;
+}
+
+.renderer--ps1 {
+    width: 100vw;
+    height: 100vh;
+    image-rendering: pixelated;
+}
+
+.webgl-fallback {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 500px;
+    text-align: center;
+    padding: 30px;
+    color: white;
+    background: rgba(0, 0, 0, 0.9);
+    border-radius: 12px;
+    font-family: Arial, sans-serif;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.webgl-fallback__icon {
+    font-size: 48px;
+    margin-bottom: 20px;
+}
+
+.webgl-fallback__title {
+    font-size: 22px;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+.webgl-fallback__detail {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #ccc;
+    margin-bottom: 20px;
+}
+
+.webgl-fallback__browsers {
+    font-size: 13px;
+    color: #999;
+    line-height: 1.5;
+}
+
+.webgl-fallback__browsers strong {
+    color: #fff;
+}
+
 .error-container {
     padding: 25px;
     max-width: 400px;

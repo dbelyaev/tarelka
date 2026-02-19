@@ -15,15 +15,15 @@ function initializeApp() {
     // Check WebGL support before initializing
     if (!checkWebGLSupport()) {
         document.body.innerHTML = `
-            <div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);max-width:500px;text-align:center;padding:30px;color:white;background:rgba(0,0,0,0.9);border-radius:12px;font-family:Arial,sans-serif;box-shadow:0 4px 20px rgba(0,0,0,0.5);">
-                <div style="font-size:48px;margin-bottom:20px;">⚠️</div>
-                <div style="font-size:22px;margin-bottom:15px;font-weight:bold;">WebGL Not Supported</div>
-                <div style="font-size:14px;line-height:1.6;color:#ccc;margin-bottom:20px;">
+            <div class="webgl-fallback">
+                <div class="webgl-fallback__icon">⚠️</div>
+                <div class="webgl-fallback__title">WebGL Not Supported</div>
+                <div class="webgl-fallback__detail">
                     Your browser doesn't support WebGL, which is required to view this 3D content.
                 </div>
-                <div style="font-size:13px;color:#999;line-height:1.5;">
+                <div class="webgl-fallback__browsers">
                     Please update to a modern browser:<br>
-                    <strong style="color:#fff;">Chrome, Firefox, Safari, or Edge</strong>
+                    <strong>Chrome, Firefox, Safari, or Edge</strong>
                 </div>
             </div>
         `;
@@ -81,7 +81,7 @@ function initializeApp() {
     let lastFpsUpdate = performance.now();
 
     if (CONFIG.showFPS && fpsCounter) {
-        fpsCounter.style.display = 'block';
+        fpsCounter.classList.add('visible');
     }
 
     // Debug monitoring interval
