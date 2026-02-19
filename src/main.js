@@ -213,8 +213,8 @@ function initializeApp() {
         }
         if (notificationEl && notificationEl.parentNode) {
             notificationEl.remove();
-            notificationEl = null;
         }
+        notificationEl = null;
         
         // Remove resize listener
         window.removeEventListener('resize', debouncedResize);
@@ -250,7 +250,10 @@ function initializeApp() {
         }
         clearTimeout(notificationTimer);
         if (autoRemoveMs > 0) {
-            notificationTimer = setTimeout(() => notificationEl.remove(), autoRemoveMs);
+            notificationTimer = setTimeout(() => {
+                notificationEl.remove();
+                notificationEl = null;
+            }, autoRemoveMs);
         }
     }
 
