@@ -38,7 +38,7 @@ export function debounce(func, wait) {
  */
 export function isSnowSeason(winterMonths) {
     const currentMonth = new Date().getMonth() + 1;
-    return winterMonths.includes(currentMonth);
+    return Array.isArray(winterMonths) && winterMonths.includes(currentMonth);
 }
 
 /**
