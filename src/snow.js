@@ -129,7 +129,7 @@ export class SnowEffect {
     
     toggle() {
         this.enabled = !this.enabled;
-        localStorage.setItem('snowEnabled', this.enabled);
+        localStorage.setItem('snowEnabled', String(this.enabled));
         if (!this.enabled) {
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         }

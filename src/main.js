@@ -84,6 +84,10 @@ function initializeApp() {
         fpsCounter.classList.add('visible');
     }
 
+    // Reusable notification element
+    let notificationEl = null;
+    let notificationTimer = null;
+
     // Debug monitoring interval
     let debugInterval = null;
     function startDebugMonitoring() {
@@ -233,9 +237,6 @@ function initializeApp() {
     const debouncedResize = debounce(() => onWindowResize(camera, renderer), CONFIG.resize.debounceMs);
     window.addEventListener('resize', debouncedResize);
 
-    // Reusable notification element
-    let notificationEl = null;
-    let notificationTimer = null;
     function showNotification(text, autoRemoveMs = 2000) {
         if (!notificationEl) {
             notificationEl = document.createElement('div');
@@ -261,7 +262,7 @@ function initializeApp() {
     const keydownHandler = (e) => {
         if (e.key === 'p' || e.key === 'P') {
             CONFIG.ps1Style = !CONFIG.ps1Style;
-            localStorage.setItem('ps1Style', CONFIG.ps1Style);
+            localStorage.setItem('ps1Style', String(CONFIG.ps1Style));
             showNotification(`PS1 Style: ${CONFIG.ps1Style ? 'ON' : 'OFF'} (reloading...)`, 0);
             setTimeout(() => location.reload(), 800);
         }
