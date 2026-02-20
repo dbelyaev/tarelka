@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; style-src 'self'; img-src 'self' data:; connect-src 'self' https://cdn.jsdelivr.net; manifest-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self';">
     <title>tarelka.xyz</title>
+    <meta name="description" content="Interactive 3D model viewer with retro PS1 rendering mode and snow effects.">
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16x16.png">
@@ -12,9 +13,11 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <noscript>
-        <div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;padding:30px;color:white;background:rgba(0,0,0,0.8);border-radius:8px;font-family:Arial,sans-serif;">
-            <div style="font-size:20px;margin-bottom:10px;">⚠️ JavaScript Required</div>
+    <main>
+        <h1 class="sr-only">tarelka.xyz — Interactive 3D Model Viewer</h1>
+        <noscript>
+        <div class="noscript-fallback">
+            <div class="noscript-fallback__title">⚠️ JavaScript Required</div>
             <div>Please enable JavaScript to view this 3D content.</div>
         </div>
     </noscript>
@@ -24,7 +27,8 @@
             <div id="progress-fill"></div>
         </div>
     </div>
-    <div id="fps-counter">FPS: --</div>
+    <div id="fps-counter" aria-hidden="true">FPS: --</div>
+    </main>
     <script type="importmap">
         {
             "imports": {

@@ -5,27 +5,25 @@ import * as THREE from 'three';
 import { CONFIG } from './config.js';
 import { checkWebGLSupport, debounce, disposeMaterial } from './utils.js';
 import { createScene, createBackgroundScene, setupLighting, createCamera } from './scene.js';
-import { createRenderer, setupContextHandlers, onWindowResize } from './renderer.js';
+import { createRenderer, setupContextHandlers, onWindowResize, logRendererInfo } from './renderer.js';
 import { loadModel } from './loader.js';
 import { initializeControls, updateRotation } from './controls.js';
 import { SnowEffect } from './snow.js';
 
 // Wait for DOM to be fully loaded
 function initializeApp() {
-    console.log('Initializing application...');
-    
     // Check WebGL support before initializing
     if (!checkWebGLSupport()) {
         document.body.innerHTML = `
-            <div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);max-width:500px;text-align:center;padding:30px;color:white;background:rgba(0,0,0,0.9);border-radius:12px;font-family:Arial,sans-serif;box-shadow:0 4px 20px rgba(0,0,0,0.5);">
-                <div style="font-size:48px;margin-bottom:20px;">⚠️</div>
-                <div style="font-size:22px;margin-bottom:15px;font-weight:bold;">WebGL Not Supported</div>
-                <div style="font-size:14px;line-height:1.6;color:#ccc;margin-bottom:20px;">
+            <div class="webgl-fallback">
+                <div class="webgl-fallback__icon">⚠️</div>
+                <div class="webgl-fallback__title">WebGL Not Supported</div>
+                <div class="webgl-fallback__detail">
                     Your browser doesn't support WebGL, which is required to view this 3D content.
                 </div>
-                <div style="font-size:13px;color:#999;line-height:1.5;">
+                <div class="webgl-fallback__browsers">
                     Please update to a modern browser:<br>
-                    <strong style="color:#fff;">Chrome, Firefox, Safari, or Edge</strong>
+                    <strong>Chrome, Firefox, Safari, or Edge</strong>
                 </div>
             </div>
         `;
@@ -39,13 +37,14 @@ function initializeApp() {
     const renderer = createRenderer();
 
     setupLighting(scene);
-    document.body.appendChild(renderer.domElement);
+    const mainEl = document.querySelector('main');
+    mainEl.appendChild(renderer.domElement);
+    renderer.domElement.setAttribute('aria-hidden', 'true');
 
     // Initialize snow effect
     let snowEffect;
     try {
         snowEffect = new SnowEffect();
-        console.log('Snow effect initialized');
     } catch (error) {
         console.error('Failed to initialize snow effect:', error);
         snowEffect = { 
@@ -82,7 +81,28 @@ function initializeApp() {
     let lastFpsUpdate = performance.now();
 
     if (CONFIG.showFPS && fpsCounter) {
-        fpsCounter.style.display = 'block';
+        fpsCounter.classList.add('visible');
+    }
+
+    // Reusable notification element
+    let notificationEl = null;
+    let notificationTimer = null;
+
+    // Debug monitoring interval
+    let debugInterval = null;
+    function startDebugMonitoring() {
+        if (debugInterval) return;
+        debugInterval = setInterval(() => logRendererInfo(renderer), 5000);
+        logRendererInfo(renderer);
+    }
+    function stopDebugMonitoring() {
+        if (debugInterval) {
+            clearInterval(debugInterval);
+            debugInterval = null;
+        }
+    }
+    if (CONFIG.debug) {
+        startDebugMonitoring();
     }
 
     /**
@@ -187,8 +207,27 @@ function initializeApp() {
         // Cleanup snow effect
         snowEffect.cleanup();
         
+        // Stop debug monitoring
+        stopDebugMonitoring();
+        
+        // Clear notification timer and remove notification element
+        if (notificationTimer) {
+            clearTimeout(notificationTimer);
+            notificationTimer = null;
+        }
+        if (notificationEl && notificationEl.parentNode) {
+            notificationEl.remove();
+        }
+        notificationEl = null;
+        
         // Remove resize listener
         window.removeEventListener('resize', debouncedResize);
+        
+        // Remove feature toggle keyboard listener
+        document.removeEventListener('keydown', keydownHandler);
+        
+        // Remove visibility change listener
+        document.removeEventListener('visibilitychange', visibilityChangeHandler);
     }
 
     // Expose cleanup function globally
@@ -198,51 +237,73 @@ function initializeApp() {
     const debouncedResize = debounce(() => onWindowResize(camera, renderer), CONFIG.resize.debounceMs);
     window.addEventListener('resize', debouncedResize);
 
-    // Keyboard toggle for PS1 style and snow effect
-    document.addEventListener('keydown', (e) => {
-        console.log('Key pressed:', e.key); // Debug log
-        
+    function showNotification(text, autoRemoveMs = 2000) {
+        if (!notificationEl) {
+            notificationEl = document.createElement('div');
+            notificationEl.className = 'notification';
+            notificationEl.setAttribute('role', 'status');
+            notificationEl.setAttribute('aria-live', 'polite');
+            notificationEl.setAttribute('aria-atomic', 'true');
+        }
+        notificationEl.textContent = text;
+        if (!notificationEl.parentNode) {
+            mainEl.appendChild(notificationEl);
+        }
+        clearTimeout(notificationTimer);
+        if (autoRemoveMs > 0) {
+            notificationTimer = setTimeout(() => {
+                notificationEl.remove();
+                notificationEl = null;
+            }, autoRemoveMs);
+        }
+    }
+
+    // Keyboard toggle for PS1 style, snow effect, and debug mode
+    const keydownHandler = (e) => {
         if (e.key === 'p' || e.key === 'P') {
             CONFIG.ps1Style = !CONFIG.ps1Style;
-            localStorage.setItem('ps1Style', CONFIG.ps1Style);
-            
-            const notification = document.createElement('div');
-            notification.textContent = `PS1 Style: ${CONFIG.ps1Style ? 'ON' : 'OFF'} (reloading...)`;
-            notification.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:white;padding:12px 24px;border-radius:6px;font-family:Arial,sans-serif;font-size:14px;z-index:10001;';
-            document.body.appendChild(notification);
-            
+            localStorage.setItem('ps1Style', String(CONFIG.ps1Style));
+            showNotification(`PS1 Style: ${CONFIG.ps1Style ? 'ON' : 'OFF'} (reloading...)`, 0);
             setTimeout(() => location.reload(), 800);
         }
         
         if (e.key === 's' || e.key === 'S') {
             snowEffect.toggle();
-            
-            const notification = document.createElement('div');
-            notification.textContent = `Snow Effect: ${snowEffect.enabled ? 'ON' : 'OFF'}`;
-            notification.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:white;padding:12px 24px;border-radius:6px;font-family:Arial,sans-serif;font-size:14px;z-index:10001;';
-            document.body.appendChild(notification);
-            
-            setTimeout(() => notification.remove(), 2000);
+            showNotification(`Snow Effect: ${snowEffect.enabled ? 'ON' : 'OFF'}`);
         }
-    });
+        
+        if (e.key === 'd' || e.key === 'D') {
+            CONFIG.debug = !CONFIG.debug;
+            if (CONFIG.debug) {
+                startDebugMonitoring();
+            } else {
+                stopDebugMonitoring();
+            }
+            showNotification(`Debug Mode: ${CONFIG.debug ? 'ON' : 'OFF'}`);
+        }
+    };
+    document.addEventListener('keydown', keydownHandler);
 
     // Pause/resume animation when tab visibility changes
-    document.addEventListener('visibilitychange', () => {
+    const visibilityChangeHandler = () => {
         if (document.hidden) {
             if (animationId) {
                 cancelAnimationFrame(animationId);
+                animationId = null;
             }
         } else {
-            animate();
+            if (!animationId) {
+                // Discard accumulated delta to prevent a large jump on resume
+                clock.getDelta();
+                animate();
+            }
         }
-    });
+    };
+    document.addEventListener('visibilitychange', visibilityChangeHandler);
 
 // Start animation loop
 animate();
 
-// Expose for debugging
-window.snowEffect = snowEffect;
-console.log('Application initialized successfully');
 }
 
 // Initialize when DOM is ready

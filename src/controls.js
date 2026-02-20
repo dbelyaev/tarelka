@@ -61,7 +61,7 @@ export function initializeControls() {
     function onMouseUp(event) {
         if (event.button === 0) {
             mouseState.isDragging = false;
-            document.body.style.cursor = 'default';
+            document.body.style.cursor = '';
         }
     }
     

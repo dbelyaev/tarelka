@@ -1,6 +1,8 @@
 /**
  * Snow effect with parallax layers
  */
+import { CONFIG } from './config.js';
+import { isSnowSeason } from './utils.js';
 
 /**
  * Snowflake class
@@ -24,6 +26,7 @@ class Snowflake {
         this.speed = (0.5 + Math.random() * 1) * layerScale;
         this.drift = (Math.random() - 0.5) * 0.5 * layerScale;
         this.opacity = (0.3 + Math.random() * 0.4) * layerScale;
+        this.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
         this.canvasWidth = canvasWidth;
         this.canvasHeight = canvasHeight;
     }
@@ -51,7 +54,7 @@ class Snowflake {
     draw(ctx) {
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+        ctx.fillStyle = this.fillStyle;
         ctx.fill();
     }
 }
@@ -64,18 +67,16 @@ export class SnowEffect {
         this.canvas = document.createElement('canvas');
         this.ctx = this.canvas.getContext('2d');
         this.snowflakes = [];
-        this.enabled = true;
+        
+        // Determine snow enabled state: respect user preference, fall back to seasonal default
+        const stored = localStorage.getItem('snowEnabled');
+        this.enabled = stored !== null ? stored === 'true' : isSnowSeason(CONFIG.snow.winterMonths);
         
         // Style canvas
-        this.canvas.style.position = 'fixed';
-        this.canvas.style.top = '0';
-        this.canvas.style.left = '0';
-        this.canvas.style.width = '100%';
-        this.canvas.style.height = '100%';
-        this.canvas.style.pointerEvents = 'none';
-        this.canvas.style.zIndex = '1000';
+        this.canvas.className = 'snow-canvas';
+        this.canvas.setAttribute('aria-hidden', 'true');
         
-        document.body.appendChild(this.canvas);
+        document.querySelector('main').appendChild(this.canvas);
         
         this.resize();
         this.createSnowflakes();
@@ -122,13 +123,13 @@ export class SnowEffect {
         // Clear canvas
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
-        // Draw snowflakes sorted by layer (background to foreground)
-        const sortedFlakes = [...this.snowflakes].sort((a, b) => a.layer - b.layer);
-        sortedFlakes.forEach(flake => flake.draw(this.ctx));
+        // Draw snowflakes (already in layer order from createSnowflakes)
+        this.snowflakes.forEach(flake => flake.draw(this.ctx));
     }
     
     toggle() {
         this.enabled = !this.enabled;
+        localStorage.setItem('snowEnabled', String(this.enabled));
         if (!this.enabled) {
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         }

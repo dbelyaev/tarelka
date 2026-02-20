@@ -15,18 +15,16 @@ export function createRenderer() {
     });
     
     // PS1-style low resolution (scale down for pixelated look)
-    const pixelScale = CONFIG.ps1Style ? CONFIG.ps1PixelScale : 1;
-    renderer.setSize(
-        window.innerWidth / pixelScale, 
-        window.innerHeight / pixelScale
-    );
-    
     if (CONFIG.ps1Style) {
-        renderer.domElement.style.width = window.innerWidth + 'px';
-        renderer.domElement.style.height = window.innerHeight + 'px';
-        renderer.domElement.style.imageRendering = 'pixelated'; // CSS for sharp pixels
+        renderer.setSize(
+            window.innerWidth / CONFIG.ps1PixelScale,
+            window.innerHeight / CONFIG.ps1PixelScale,
+            false // Don't set inline CSS — let .renderer--ps1 control display size
+        );
+        renderer.domElement.classList.add('renderer--ps1');
         renderer.setPixelRatio(1); // Force 1:1 pixel ratio for PS1 look
     } else {
+        renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(window.devicePixelRatio);
     }
     
@@ -71,17 +69,30 @@ export function onWindowResize(camera, renderer) {
         camera.updateProjectionMatrix();
         
         // Maintain PS1-style low resolution if enabled
-        const pixelScale = CONFIG.ps1Style ? CONFIG.ps1PixelScale : 1;
-        renderer.setSize(
-            window.innerWidth / pixelScale, 
-            window.innerHeight / pixelScale
-        );
-        
         if (CONFIG.ps1Style) {
-            renderer.domElement.style.width = window.innerWidth + 'px';
-            renderer.domElement.style.height = window.innerHeight + 'px';
+            renderer.setSize(
+                window.innerWidth / CONFIG.ps1PixelScale,
+                window.innerHeight / CONFIG.ps1PixelScale,
+                false // Don't set inline CSS — let .renderer--ps1 control display size
+            );
+        } else {
+            renderer.setSize(window.innerWidth, window.innerHeight);
         }
     } catch (resizeError) {
         console.error('Resize error:', resizeError);
     }
+}
+
+/**
+ * Log renderer memory and draw call statistics for debugging
+ * @param {THREE.WebGLRenderer} renderer
+ */
+export function logRendererInfo(renderer) {
+    const { memory, render } = renderer.info;
+    console.table({
+        geometries: memory.geometries,
+        textures: memory.textures,
+        drawCalls: render.calls,
+        triangles: render.triangles
+    });
 }

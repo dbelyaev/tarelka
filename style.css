@@ -55,8 +55,61 @@ canvas {
     padding: 5px 10px;
     border-radius: 4px;
     pointer-events: none;
-    z-index: 1000;
+    z-index: 1001;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+#fps-counter.visible {
+    display: block;
+}
+
+.renderer--ps1 {
+    width: 100vw;
+    height: 100vh;
+    image-rendering: pixelated;
+}
+
+.webgl-fallback {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 500px;
+    text-align: center;
+    padding: 30px;
+    color: white;
+    background: rgba(0, 0, 0, 0.9);
+    border-radius: 12px;
+    font-family: Arial, sans-serif;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.webgl-fallback__icon {
+    font-size: 48px;
+    margin-bottom: 20px;
+}
+
+.webgl-fallback__title {
+    font-size: 22px;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+.webgl-fallback__detail {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #ccc;
+    margin-bottom: 20px;
+}
+
+.webgl-fallback__browsers {
+    font-size: 13px;
+    color: #999;
+    line-height: 1.5;
+}
+
+.webgl-fallback__browsers strong {
+    color: #fff;
 }
 
 .error-container {
@@ -119,4 +172,58 @@ canvas {
 
 .retry-button:active {
     transform: translateY(0);
+}
+
+.noscript-fallback {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    padding: 30px;
+    color: white;
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 8px;
+    font-family: Arial, sans-serif;
+}
+
+.noscript-fallback__title {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+.notification {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    z-index: 1002;
+}
+
+.snow-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
