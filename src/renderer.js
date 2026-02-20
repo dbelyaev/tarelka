@@ -25,7 +25,7 @@ export function createRenderer() {
         renderer.setPixelRatio(1); // Force 1:1 pixel ratio for PS1 look
     } else {
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, CONFIG.renderer.maxPixelRatio));
     }
     
     renderer.outputColorSpace = THREE.SRGBColorSpace;

@@ -1,8 +1,18 @@
 /**
  * Snow effect with parallax layers
+ * 
+ * Performance: snowflakes are batched by fillStyle (opacity group) and drawn
+ * with a single fill() per group. Flakes with radius ≤ 2px use fillRect()
+ * instead of arc() since they are visually indistinguishable from squares.
  */
 import { CONFIG } from './config.js';
-import { isSnowSeason } from './utils.js';
+import { isSnowSeason, debounce } from './utils.js';
+
+/** Layer distribution ratios: background, middle, foreground */
+const LAYER_DISTRIBUTION = [0.3, 0.4, 0.3];
+
+/** Radius threshold — at or below this, fillRect is used instead of arc */
+const SMALL_FLAKE_THRESHOLD = 2;
 
 /**
  * Snowflake class
@@ -50,13 +60,6 @@ class Snowflake {
             this.x = this.canvasWidth + 10;
         }
     }
-    
-    draw(ctx) {
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.fillStyle = this.fillStyle;
-        ctx.fill();
-    }
 }
 
 /**
@@ -81,8 +84,8 @@ export class SnowEffect {
         this.resize();
         this.createSnowflakes();
         
-        // Handle window resize
-        this.resizeHandler = () => this.resize();
+        // Handle window resize (debounced to match renderer resize behavior)
+        this.resizeHandler = debounce(() => this.resize(), CONFIG.resize.debounceMs);
         window.addEventListener('resize', this.resizeHandler);
     }
     
@@ -90,21 +93,56 @@ export class SnowEffect {
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;
         
-        // Update all snowflakes with new dimensions
+        const w = this.canvas.width;
+        const h = this.canvas.height;
+        
+        // Update existing snowflakes with new dimensions
         this.snowflakes.forEach(flake => {
-            flake.canvasWidth = this.canvas.width;
-            flake.canvasHeight = this.canvas.height;
+            flake.canvasWidth = w;
+            flake.canvasHeight = h;
         });
+        
+        // Recalculate target flake count for the new viewport area
+        this._adjustFlakeCount(w, h);
+    }
+    
+    /**
+     * Adjust snowflake count to match the target for the current viewport.
+     * Adds or removes flakes proportionally across layers.
+     */
+    _adjustFlakeCount(canvasWidth, canvasHeight) {
+        const targetTotal = Math.floor((canvasWidth * canvasHeight) / CONFIG.snow.flakesPerArea);
+        const currentTotal = this.snowflakes.length;
+        
+        if (targetTotal > currentTotal) {
+            // Add flakes, distributing across layers
+            const toAdd = targetTotal - currentTotal;
+            for (let i = 0; i < toAdd; i++) {
+                const layer = this._pickLayer(i, toAdd);
+                this.snowflakes.push(new Snowflake(canvasWidth, canvasHeight, layer));
+            }
+        } else if (targetTotal < currentTotal) {
+            // Remove excess flakes from the end
+            this.snowflakes.length = targetTotal;
+        }
+    }
+    
+    /**
+     * Pick a layer for a new snowflake based on distribution ratios.
+     */
+    _pickLayer(index, total) {
+        const ratio = index / total;
+        if (ratio < LAYER_DISTRIBUTION[0]) return 0;
+        if (ratio < LAYER_DISTRIBUTION[0] + LAYER_DISTRIBUTION[1]) return 1;
+        return 2;
     }
     
     createSnowflakes() {
-        const numFlakes = Math.floor((this.canvas.width * this.canvas.height) / 8000);
+        const numFlakes = Math.floor((this.canvas.width * this.canvas.height) / CONFIG.snow.flakesPerArea);
         
         // Create 3 layers with different quantities
-        const layerDistribution = [0.3, 0.4, 0.3]; // background, middle, foreground
-        
         for (let layer = 0; layer < 3; layer++) {
-            const count = Math.floor(numFlakes * layerDistribution[layer]);
+            const count = Math.floor(numFlakes * LAYER_DISTRIBUTION[layer]);
             for (let i = 0; i < count; i++) {
                 this.snowflakes.push(new Snowflake(this.canvas.width, this.canvas.height, layer));
             }
@@ -117,14 +155,51 @@ export class SnowEffect {
         this.snowflakes.forEach(flake => flake.update(delta));
     }
     
+    /**
+     * Draw all snowflakes, batched by fillStyle to minimize canvas state changes.
+     * Small flakes (radius ≤ 2px) use fillRect; larger ones use a single Path2D per group.
+     */
     draw() {
         if (!this.enabled) return;
         
-        // Clear canvas
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        const ctx = this.ctx;
+        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
-        // Draw snowflakes (already in layer order from createSnowflakes)
-        this.snowflakes.forEach(flake => flake.draw(this.ctx));
+        // Group snowflakes by fillStyle for batched drawing
+        const groups = new Map();
+        for (const flake of this.snowflakes) {
+            let group = groups.get(flake.fillStyle);
+            if (!group) {
+                group = { small: [], large: [] };
+                groups.set(flake.fillStyle, group);
+            }
+            if (flake.radius <= SMALL_FLAKE_THRESHOLD) {
+                group.small.push(flake);
+            } else {
+                group.large.push(flake);
+            }
+        }
+        
+        // Draw each group with a single fillStyle assignment and minimal draw calls
+        for (const [style, group] of groups) {
+            ctx.fillStyle = style;
+            
+            // Small flakes: fillRect is cheaper than arc for tiny circles
+            for (const flake of group.small) {
+                const d = flake.radius * 2;
+                ctx.fillRect(flake.x - flake.radius, flake.y - flake.radius, d, d);
+            }
+            
+            // Large flakes: batch into a single Path2D, one fill() call per group
+            if (group.large.length > 0) {
+                const path = new Path2D();
+                for (const flake of group.large) {
+                    path.moveTo(flake.x + flake.radius, flake.y);
+                    path.arc(flake.x, flake.y, flake.radius, 0, Math.PI * 2);
+                }
+                ctx.fill(path);
+            }
+        }
     }
     
     toggle() {
