@@ -14,6 +14,9 @@ const LAYER_DISTRIBUTION = [0.3, 0.4, 0.3];
 /** Radius threshold — at or below this, fillRect is used instead of arc */
 const SMALL_FLAKE_THRESHOLD = 2;
 
+/** Minimum snowflake count so the effect stays visible on very small viewports */
+const MIN_SNOWFLAKES = 10;
+
 /**
  * Snowflake class
  */
@@ -35,7 +38,7 @@ class Snowflake {
         this.radius = (1 + Math.random() * 2.5) * layerScale;
         this.speed = (0.5 + Math.random() * 1) * layerScale;
         this.drift = (Math.random() - 0.5) * 0.5 * layerScale;
-        this.opacity = (0.3 + Math.random() * 0.4) * layerScale;
+        this.opacity = Math.round((0.3 + Math.random() * 0.4) * layerScale * 10) / 10;
         this.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
         this.canvasWidth = canvasWidth;
         this.canvasHeight = canvasHeight;
@@ -111,7 +114,10 @@ export class SnowEffect {
      * Adds or removes flakes proportionally across layers.
      */
     _adjustFlakeCount(canvasWidth, canvasHeight) {
-        const targetTotal = Math.floor((canvasWidth * canvasHeight) / CONFIG.snow.flakesPerArea);
+        const targetTotal = Math.max(
+            Math.floor((canvasWidth * canvasHeight) / CONFIG.snow.flakesPerArea),
+            MIN_SNOWFLAKES
+        );
         const currentTotal = this.snowflakes.length;
         
         if (targetTotal > currentTotal) {
@@ -122,8 +128,14 @@ export class SnowEffect {
                 this.snowflakes.push(new Snowflake(canvasWidth, canvasHeight, layer));
             }
         } else if (targetTotal < currentTotal) {
-            // Remove excess flakes from the end
-            this.snowflakes.length = targetTotal;
+            // Remove excess flakes proportionally from each layer
+            const result = [];
+            for (let layer = 0; layer < LAYER_DISTRIBUTION.length; layer++) {
+                const layerTarget = Math.floor(targetTotal * LAYER_DISTRIBUTION[layer]);
+                const layerFlakes = this.snowflakes.filter(f => f.layer === layer);
+                result.push(...layerFlakes.slice(0, layerTarget));
+            }
+            this.snowflakes = result;
         }
     }
     
@@ -138,7 +150,10 @@ export class SnowEffect {
     }
     
     createSnowflakes() {
-        const numFlakes = Math.floor((this.canvas.width * this.canvas.height) / CONFIG.snow.flakesPerArea);
+        const numFlakes = Math.max(
+            Math.floor((this.canvas.width * this.canvas.height) / CONFIG.snow.flakesPerArea),
+            MIN_SNOWFLAKES
+        );
         
         // Create 3 layers with different quantities
         for (let layer = 0; layer < 3; layer++) {
