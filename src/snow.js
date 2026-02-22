@@ -86,7 +86,6 @@ export class SnowEffect {
         document.querySelector('main').appendChild(this.canvas);
         
         this.resize();
-        this.createSnowflakes();
         
         // Handle window resize (debounced to match renderer resize behavior)
         this.resizeHandler = debounce(() => this.resize(), CONFIG.resize.debounceMs);
@@ -149,21 +148,6 @@ export class SnowEffect {
         if (r < LAYER_DISTRIBUTION[0]) return 0;
         if (r < LAYER_DISTRIBUTION[0] + LAYER_DISTRIBUTION[1]) return 1;
         return 2;
-    }
-    
-    createSnowflakes() {
-        const numFlakes = Math.max(
-            Math.floor((this.canvas.width * this.canvas.height) / CONFIG.snow.flakesPerArea),
-            MIN_SNOWFLAKES
-        );
-        
-        // Create 3 layers with different quantities
-        for (let layer = 0; layer < 3; layer++) {
-            const count = Math.floor(numFlakes * LAYER_DISTRIBUTION[layer]);
-            for (let i = 0; i < count; i++) {
-                this.snowflakes.push(new Snowflake(this.canvas.width, this.canvas.height, layer));
-            }
-        }
     }
     
     update(delta) {
