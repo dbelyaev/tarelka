@@ -125,7 +125,7 @@ export class SnowEffect {
             // Add flakes, distributing across layers
             const toAdd = targetTotal - currentTotal;
             for (let i = 0; i < toAdd; i++) {
-                const layer = this._pickLayer(i, toAdd);
+                const layer = this._pickLayer();
                 this.snowflakes.push(new Snowflake(canvasWidth, canvasHeight, layer));
             }
         } else if (targetTotal < currentTotal) {
@@ -141,12 +141,13 @@ export class SnowEffect {
     }
     
     /**
-     * Pick a layer for a new snowflake based on distribution ratios.
+     * Pick a layer for a new snowflake using weighted random selection
+     * based on LAYER_DISTRIBUTION ratios.
      */
-    _pickLayer(index, total) {
-        const ratio = index / total;
-        if (ratio < LAYER_DISTRIBUTION[0]) return 0;
-        if (ratio < LAYER_DISTRIBUTION[0] + LAYER_DISTRIBUTION[1]) return 1;
+    _pickLayer() {
+        const r = Math.random();
+        if (r < LAYER_DISTRIBUTION[0]) return 0;
+        if (r < LAYER_DISTRIBUTION[0] + LAYER_DISTRIBUTION[1]) return 1;
         return 2;
     }
     
