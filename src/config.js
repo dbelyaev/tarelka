@@ -31,8 +31,12 @@ export const CONFIG = {
         point: { intensity: 1.5, position: { x: 0, y: 3, z: 0 } },
         top: { intensity: 1.5, position: { x: 0, y: 5, z: 0 } }
     },
+    renderer: {
+        maxPixelRatio: 2 // Cap devicePixelRatio to avoid excessive fill rate on 3x+ HiDPI displays
+    },
     snow: {
-        winterMonths: [12, 1] // Months when snow is enabled by default (1-indexed: 12=Dec, 1=Jan)
+        winterMonths: [12, 1], // Months when snow is enabled by default (1-indexed: 12=Dec, 1=Jan)
+        flakesPerArea: 8000 // Viewport area (px²) per snowflake
     },
     resize: {
         debounceMs: 100

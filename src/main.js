@@ -261,9 +261,11 @@ function initializeApp() {
     // Keyboard toggle for PS1 style, snow effect, and debug mode
     const keydownHandler = (e) => {
         if (e.key === 'p' || e.key === 'P') {
-            CONFIG.ps1Style = !CONFIG.ps1Style;
-            localStorage.setItem('ps1Style', String(CONFIG.ps1Style));
-            showNotification(`PS1 Style: ${CONFIG.ps1Style ? 'ON' : 'OFF'} (reloading...)`, 0);
+            // Write the toggled value to localStorage but don't mutate CONFIG
+            // in memory — prevents jitter starting/stopping before the reload.
+            const newPs1Style = !CONFIG.ps1Style;
+            localStorage.setItem('ps1Style', String(newPs1Style));
+            showNotification(`PS1 Style: ${newPs1Style ? 'ON' : 'OFF'} (reloading...)`, 0);
             setTimeout(() => location.reload(), 800);
         }
         
