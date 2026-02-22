@@ -19,16 +19,19 @@ export function checkWebGLSupport() {
 /**
  * Creates a debounced version of a function that delays its execution
  * until after a specified wait time has elapsed since the last call.
+ * The returned function has a .cancel() method to clear any pending timeout.
  * @param {Function} func - The function to debounce
  * @param {number} wait - The number of milliseconds to wait before executing
- * @returns {Function} A debounced version of the input function
+ * @returns {Function} A debounced version of the input function with a cancel() method
  */
 export function debounce(func, wait) {
     let timeout;
-    return function(...args) {
+    const debounced = function(...args) {
         clearTimeout(timeout);
         timeout = setTimeout(() => func.apply(this, args), wait);
     };
+    debounced.cancel = () => clearTimeout(timeout);
+    return debounced;
 }
 
 /**

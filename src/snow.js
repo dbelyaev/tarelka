@@ -1,9 +1,10 @@
 /**
  * Snow effect with parallax layers
  * 
- * Performance: snowflakes are batched by fillStyle (opacity group) and drawn
- * with a single fill() per group. Flakes with radius ≤ 2px use fillRect()
- * instead of arc() since they are visually indistinguishable from squares.
+ * Performance: snowflake opacity is quantized to 0.1 increments so that flakes
+ * share fillStyle values and can be batched — one fill() call per opacity group.
+ * Flakes with radius ≤ 2px use fillRect() instead of arc() since they are
+ * visually indistinguishable from squares at that size.
  */
 import { CONFIG } from './config.js';
 import { isSnowSeason, debounce } from './utils.js';
@@ -171,8 +172,9 @@ export class SnowEffect {
     }
     
     /**
-     * Draw all snowflakes, batched by fillStyle to minimize canvas state changes.
-     * Small flakes (radius ≤ 2px) use fillRect; larger ones use a single Path2D per group.
+     * Draw all snowflakes, batched by fillStyle (quantized opacity) to minimize
+     * canvas state changes. Small flakes (radius ≤ 2px) use fillRect; larger
+     * ones use a single Path2D per group.
      */
     draw() {
         if (!this.enabled) return;
@@ -226,6 +228,7 @@ export class SnowEffect {
     }
     
     cleanup() {
+        this.resizeHandler.cancel();
         window.removeEventListener('resize', this.resizeHandler);
         if (this.canvas.parentNode) {
             this.canvas.parentNode.removeChild(this.canvas);
