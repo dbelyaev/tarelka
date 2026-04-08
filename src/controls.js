@@ -158,8 +158,9 @@ export function updateRotation(model, mouseState, delta) {
             if (Math.abs(mouseState.velocityY) < 0.00001) mouseState.velocityY = 0;
         }
         
-        // Continue default auto-rotation
-        mouseState.defaultRotationY += delta * CONFIG.rotation.speed;
+        // Continue default auto-rotation; wrap to [-2π, 2π] to prevent
+        // floating-point precision loss in very long sessions.
+        mouseState.defaultRotationY = (mouseState.defaultRotationY + delta * CONFIG.rotation.speed) % (Math.PI * 2);
         
         // Apply combined rotation
         model.rotation.y = mouseState.defaultRotationY + mouseState.rotationY;
