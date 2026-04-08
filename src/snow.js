@@ -128,25 +128,46 @@ export class SnowEffect {
                 this.snowflakes.push(new Snowflake(canvasWidth, canvasHeight, layer));
             }
         } else if (targetTotal < currentTotal) {
-            // Remove excess flakes proportionally across layers using the
-            // largest-remainder method: assign Math.floor(target × ratio) to
-            // each layer first, then give the 1-2 remaining slots to the layers
-            // with the highest fractional overshoot rather than always to layer 0.
+            // Remove excess flakes proportionally using the largest-remainder method.
+            // Because flakes are added via weighted randomness, a layer's actual count
+            // may be less than its ideal quota; cap each quota to available flakes and
+            // redistribute any deficit to layers with spare capacity so the final total
+            // always equals targetTotal.
             const allocations = LAYER_DISTRIBUTION.map((ratio, layer) => {
                 const exact = targetTotal * ratio;
+                const quota = Math.floor(exact);
                 return {
-                    quota: Math.floor(exact),
-                    remainder: exact - Math.floor(exact),
+                    quota,
+                    remainder: exact - quota,
                     flakes: this.snowflakes.filter(f => f.layer === layer)
                 };
             });
 
-            const shortage = targetTotal - allocations.reduce((s, a) => s + a.quota, 0);
+            // Phase 1: distribute rounding remainder by largest fractional overshoot
+            let remaining = targetTotal - allocations.reduce((s, a) => s + a.quota, 0);
             allocations
                 .slice()
                 .sort((a, b) => b.remainder - a.remainder)
-                .slice(0, shortage)
-                .forEach(a => a.quota++);
+                .forEach(a => { if (remaining > 0) { a.quota++; remaining--; } });
+
+            // Phase 2: cap each quota to what the layer actually has
+            allocations.forEach(a => { a.quota = Math.min(a.quota, a.flakes.length); });
+
+            // Phase 3: redistribute deficit to layers with spare capacity
+            let deficit = targetTotal - allocations.reduce((s, a) => s + a.quota, 0);
+            if (deficit > 0) {
+                allocations
+                    .slice()
+                    .sort((a, b) => b.remainder - a.remainder)
+                    .forEach(a => {
+                        if (deficit <= 0) return;
+                        const spare = a.flakes.length - a.quota;
+                        if (spare <= 0) return;
+                        const extra = Math.min(spare, deficit);
+                        a.quota += extra;
+                        deficit -= extra;
+                    });
+            }
 
             this.snowflakes = allocations.flatMap(({ quota, flakes }) => flakes.slice(0, quota));
         }
