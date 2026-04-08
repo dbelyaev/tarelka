@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; style-src 'self'; img-src 'self' data:; connect-src 'self' https://cdn.jsdelivr.net; manifest-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'sha256-8QVolQ6eLABxmzCo2EVfZ9A2wfbss93NCH8F/gecysk='; style-src 'self'; img-src 'self' data:; connect-src 'self' https://cdn.jsdelivr.net; manifest-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self';">
     <title>tarelka.xyz</title>
     <meta name="description" content="Interactive 3D model viewer with retro PS1 rendering mode and snow effects.">
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
@@ -29,11 +29,18 @@
     </div>
     <div id="fps-counter" aria-hidden="true">FPS: --</div>
     </main>
+    <!-- Import map integrity is part of the HTML Living Standard and enforced
+         natively in Chrome 124+. Firefox and Safari currently ignore the field;
+         add es-module-shims for cross-browser enforcement if needed. -->
     <script type="importmap">
         {
             "imports": {
                 "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
                 "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+            },
+            "integrity": {
+                "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js": "sha384-qOubuRxWZ0I7rXTjcuhcKNHKvPM7q0ztN8/82sJnxnyKS0OXTeB5FsIcysc2T9EY",
+                "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/loaders/FBXLoader.js": "sha384-r8GtHTuiKi9iq/ZvQpNRTJ9J7UiUDf+RBBsfdy6CjA9YD4zHV++O0l483N3dQQOv"
             }
         }
     </script>
