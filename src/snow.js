@@ -128,12 +128,17 @@ export class SnowEffect {
                 this.snowflakes.push(new Snowflake(canvasWidth, canvasHeight, layer));
             }
         } else if (targetTotal < currentTotal) {
-            // Remove excess flakes proportionally from each layer
+            // Remove excess flakes proportionally from each layer.
+            // Math.floor per layer can leave 1-2 flakes short of targetTotal;
+            // pad with new flakes so the count always reaches exactly targetTotal.
             const result = [];
             for (let layer = 0; layer < LAYER_DISTRIBUTION.length; layer++) {
                 const layerTarget = Math.floor(targetTotal * LAYER_DISTRIBUTION[layer]);
                 const layerFlakes = this.snowflakes.filter(f => f.layer === layer);
                 result.push(...layerFlakes.slice(0, layerTarget));
+            }
+            while (result.length < targetTotal) {
+                result.push(new Snowflake(canvasWidth, canvasHeight, this._pickLayer()));
             }
             this.snowflakes = result;
         }
