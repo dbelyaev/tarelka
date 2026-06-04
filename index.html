@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'sha256-8QVolQ6eLABxmzCo2EVfZ9A2wfbss93NCH8F/gecysk='; style-src 'self'; img-src 'self' data:; connect-src 'self' https://cdn.jsdelivr.net; manifest-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'sha256-BX4xqobYQhHF2enluDoiogebTsfiHxqK4kLBbVnvmYQ='; style-src 'self'; img-src 'self' data:; connect-src 'self' https://cdn.jsdelivr.net; manifest-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self';">
     <title>tarelka.xyz</title>
     <meta name="description" content="Interactive 3D model viewer with retro PS1 rendering mode and snow effects.">
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
@@ -23,7 +23,7 @@
     </noscript>
     <div id="loading" role="status" aria-live="polite">
         <div>Loading...</div>
-        <div id="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+        <div id="progress-bar" role="progressbar" aria-label="Loading progress" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
             <div id="progress-fill"></div>
         </div>
     </div>
@@ -40,7 +40,10 @@
             },
             "integrity": {
                 "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js": "sha384-qOubuRxWZ0I7rXTjcuhcKNHKvPM7q0ztN8/82sJnxnyKS0OXTeB5FsIcysc2T9EY",
-                "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/loaders/FBXLoader.js": "sha384-r8GtHTuiKi9iq/ZvQpNRTJ9J7UiUDf+RBBsfdy6CjA9YD4zHV++O0l483N3dQQOv"
+                "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/loaders/FBXLoader.js": "sha384-r8GtHTuiKi9iq/ZvQpNRTJ9J7UiUDf+RBBsfdy6CjA9YD4zHV++O0l483N3dQQOv",
+                "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/libs/fflate.module.js": "sha384-WfAf3P1ihuiJhAj/FmfdKxOqoKSzTJ1JQEyTB4vuhzg+4QYUKf4Abi6Bijn0sbr6",
+                "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/curves/NURBSCurve.js": "sha384-K5l0UXbT5oltx2sQbkGLLUpsecYQgxTdHuq8vNsmCvNrdBqxeMAiEFqZ+jVFXgoe",
+                "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/curves/NURBSUtils.js": "sha384-7oe/2QjLVZsCvAD3+DdagV5yb4wv0OOMn2/uaIlKHTavoFEmVjdRrXhalahaHfvR"
             }
         }
     </script>

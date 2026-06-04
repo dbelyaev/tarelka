@@ -25,6 +25,7 @@ export function loadModel(scene, onSuccess, attemptNumber = 1) {
         const progressBar = document.createElement('div');
         progressBar.id = 'progress-bar';
         progressBar.setAttribute('role', 'progressbar');
+        progressBar.setAttribute('aria-label', 'Loading progress');
         progressBar.setAttribute('aria-valuenow', '0');
         progressBar.setAttribute('aria-valuemin', '0');
         progressBar.setAttribute('aria-valuemax', '100');
@@ -109,11 +110,9 @@ export function loadModel(scene, onSuccess, attemptNumber = 1) {
                 const percentComplete = (xhr.loaded / xhr.total) * 100;
                 progressFillEl.style.width = percentComplete + '%';
                 
-                // Update ARIA attributes for accessibility
+                // Update ARIA value for accessibility
                 if (progressBarEl) {
                     progressBarEl.setAttribute('aria-valuenow', Math.round(percentComplete));
-                    progressBarEl.setAttribute('aria-valuemin', '0');
-                    progressBarEl.setAttribute('aria-valuemax', '100');
                 }
             }
         },
@@ -165,15 +164,23 @@ function showLoadingError(loadingEl, error) {
     // Create actionable steps
     const errorSteps = document.createElement('div');
     errorSteps.className = 'error-steps';
-    errorSteps.innerHTML = `
-        <strong style="color: #fff;">Troubleshooting steps:</strong>
-        <ul style="margin: 8px 0; padding-left: 20px;">
-            <li>Check your internet connection</li>
-            <li>Try refreshing the page</li>
-            <li>Clear your browser cache</li>
-            <li>Try a different browser</li>
-        </ul>
-    `;
+    const stepsHeading = document.createElement('strong');
+    stepsHeading.className = 'error-steps__heading';
+    stepsHeading.textContent = 'Troubleshooting steps:';
+    const stepsList = document.createElement('ul');
+    stepsList.className = 'error-steps__list';
+    for (const step of [
+        'Check your internet connection',
+        'Try refreshing the page',
+        'Clear your browser cache',
+        'Try a different browser'
+    ]) {
+        const li = document.createElement('li');
+        li.textContent = step;
+        stepsList.appendChild(li);
+    }
+    errorSteps.appendChild(stepsHeading);
+    errorSteps.appendChild(stepsList);
     
     // Create retry button
     const retryButton = document.createElement('button');
