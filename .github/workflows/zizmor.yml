@@ -12,7 +12,6 @@ concurrency:
 permissions: {}
 
 jobs:
-
   zizmor:
     timeout-minutes: 5
     runs-on: ubuntu-latest
