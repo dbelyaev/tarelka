@@ -166,8 +166,8 @@ function showLoadingError(loadingEl, error) {
     const errorSteps = document.createElement('div');
     errorSteps.className = 'error-steps';
     errorSteps.innerHTML = `
-        <strong style="color: #fff;">Troubleshooting steps:</strong>
-        <ul style="margin: 8px 0; padding-left: 20px;">
+        <strong class="error-steps__heading">Troubleshooting steps:</strong>
+        <ul class="error-steps__list">
             <li>Check your internet connection</li>
             <li>Try refreshing the page</li>
             <li>Clear your browser cache</li>
