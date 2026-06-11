@@ -60,6 +60,10 @@ tarelka/
 - **S** - Toggle snow effect on/off
 - **D** - Toggle debug mode (shows renderer statistics in console)
 
+## Hosting
+
+This site is hosted via [Cloudflare Pages](https://pages.cloudflare.com/), providing fast global delivery through Cloudflare's edge network.
+
 # Attributions
 
 Models used:
