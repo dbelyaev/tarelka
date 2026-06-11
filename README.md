@@ -64,7 +64,7 @@ tarelka/
 
 This site is hosted via [Cloudflare Pages](https://pages.cloudflare.com/), providing fast global delivery through Cloudflare's edge network.
 
-# Attributions
+## Attributions
 
 Models used:
 
