@@ -300,6 +300,10 @@ function initializeApp() {
             }
         } else {
             if (!animationId) {
+                // Reset the FPS measurement window so the hidden duration
+                // isn't counted as part of the next 1-second sample.
+                frameCount = 0;
+                lastFpsUpdate = performance.now();
                 animationId = requestAnimationFrame(animate);
             }
         }
