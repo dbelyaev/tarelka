@@ -166,6 +166,12 @@ function initializeApp() {
      * Cleanup function to remove all event listeners and dispose of Three.js resources
      */
     function cleanup() {
+        // Stop the animation loop before disposing resources it relies on
+        if (animationId) {
+            cancelAnimationFrame(animationId);
+            animationId = null;
+        }
+
         // Dispose of model geometries and materials
         if (model) {
             model.traverse((child) => {
@@ -310,9 +316,8 @@ function initializeApp() {
     };
     document.addEventListener('visibilitychange', visibilityChangeHandler);
 
-// Start animation loop
-animationId = requestAnimationFrame(animate);
-
+    // Start animation loop
+    animationId = requestAnimationFrame(animate);
 }
 
 // Initialize when DOM is ready
