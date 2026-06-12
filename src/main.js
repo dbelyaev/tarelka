@@ -71,7 +71,8 @@ function initializeApp() {
     });
 
     // Animation state
-    const clock = new THREE.Clock();
+    const timer = new THREE.Timer();
+    timer.connect(document);
     let jitterTime = 0;
     let animationId;
 
@@ -108,10 +109,11 @@ function initializeApp() {
     /**
      * Main animation loop
      */
-    function animate() {
+    function animate(timestamp) {
         animationId = requestAnimationFrame(animate);
-        
-        const delta = clock.getDelta();
+
+        timer.update(timestamp);
+        const delta = timer.getDelta();
         
         if (CONFIG.ps1Style) {
             jitterTime += delta;
@@ -164,6 +166,12 @@ function initializeApp() {
      * Cleanup function to remove all event listeners and dispose of Three.js resources
      */
     function cleanup() {
+        // Stop the animation loop before disposing resources it relies on
+        if (animationId) {
+            cancelAnimationFrame(animationId);
+            animationId = null;
+        }
+
         // Dispose of model geometries and materials
         if (model) {
             model.traverse((child) => {
@@ -200,6 +208,9 @@ function initializeApp() {
         if (renderer) {
             renderer.dispose();
         }
+
+        // Disconnect the timer's visibility-change listener
+        timer.dispose();
         
         // Remove controls event listeners
         cleanupControls();
@@ -295,17 +306,18 @@ function initializeApp() {
             }
         } else {
             if (!animationId) {
-                // Discard accumulated delta to prevent a large jump on resume
-                clock.getDelta();
-                animate();
+                // Reset the FPS measurement window so the hidden duration
+                // isn't counted as part of the next 1-second sample.
+                frameCount = 0;
+                lastFpsUpdate = performance.now();
+                animationId = requestAnimationFrame(animate);
             }
         }
     };
     document.addEventListener('visibilitychange', visibilityChangeHandler);
 
-// Start animation loop
-animate();
-
+    // Start animation loop
+    animationId = requestAnimationFrame(animate);
 }
 
 // Initialize when DOM is ready
