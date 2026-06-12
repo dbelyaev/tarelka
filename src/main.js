@@ -71,7 +71,8 @@ function initializeApp() {
     });
 
     // Animation state
-    const clock = new THREE.Clock();
+    const timer = new THREE.Timer();
+    timer.connect(document);
     let jitterTime = 0;
     let animationId;
 
@@ -108,10 +109,11 @@ function initializeApp() {
     /**
      * Main animation loop
      */
-    function animate() {
+    function animate(timestamp) {
         animationId = requestAnimationFrame(animate);
-        
-        const delta = clock.getDelta();
+
+        timer.update(timestamp);
+        const delta = timer.getDelta();
         
         if (CONFIG.ps1Style) {
             jitterTime += delta;
@@ -200,6 +202,9 @@ function initializeApp() {
         if (renderer) {
             renderer.dispose();
         }
+
+        // Disconnect the timer's visibility-change listener
+        timer.dispose();
         
         // Remove controls event listeners
         cleanupControls();
@@ -295,8 +300,6 @@ function initializeApp() {
             }
         } else {
             if (!animationId) {
-                // Discard accumulated delta to prevent a large jump on resume
-                clock.getDelta();
                 animate();
             }
         }
