@@ -300,14 +300,14 @@ function initializeApp() {
             }
         } else {
             if (!animationId) {
-                animate();
+                animationId = requestAnimationFrame(animate);
             }
         }
     };
     document.addEventListener('visibilitychange', visibilityChangeHandler);
 
 // Start animation loop
-animate();
+animationId = requestAnimationFrame(animate);
 
 }
 
