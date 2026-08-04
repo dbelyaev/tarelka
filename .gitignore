@@ -3,6 +3,9 @@
 # backup files
 *.bak
 
+# Node
+node_modules/
+
 # log files
 *.log
 *.log.zip
