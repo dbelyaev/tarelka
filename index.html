@@ -21,12 +21,10 @@
             <div>Please enable JavaScript to view this 3D content.</div>
         </div>
     </noscript>
-    <div id="loading" role="status" aria-live="polite">
+    <output id="loading" aria-live="polite">
         <div>Loading...</div>
-        <div id="progress-bar" role="progressbar" aria-label="Loading progress" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-            <div id="progress-fill"></div>
-        </div>
-    </div>
+        <progress id="progress-bar" aria-label="Loading progress" value="0" max="100"></progress>
+    </output>
     <div id="fps-counter" aria-hidden="true">FPS: --</div>
     </main>
     <!-- Import map integrity is part of the HTML Living Standard and enforced

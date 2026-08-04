@@ -113,21 +113,21 @@ export function initializeControls() {
     }
     
     // Attach event listeners
-    window.addEventListener('mousedown', onMouseDown);
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseup', onMouseUp);
-    window.addEventListener('touchstart', onTouchStart, { passive: false });
-    window.addEventListener('touchmove', onTouchMove, { passive: false });
-    window.addEventListener('touchend', onTouchEnd, { passive: false });
-    
+    globalThis.addEventListener('mousedown', onMouseDown);
+    globalThis.addEventListener('mousemove', onMouseMove);
+    globalThis.addEventListener('mouseup', onMouseUp);
+    globalThis.addEventListener('touchstart', onTouchStart, { passive: false });
+    globalThis.addEventListener('touchmove', onTouchMove, { passive: false });
+    globalThis.addEventListener('touchend', onTouchEnd, { passive: false });
+
     // Cleanup function
     function cleanup() {
-        window.removeEventListener('mousedown', onMouseDown);
-        window.removeEventListener('mousemove', onMouseMove);
-        window.removeEventListener('mouseup', onMouseUp);
-        window.removeEventListener('touchstart', onTouchStart);
-        window.removeEventListener('touchmove', onTouchMove);
-        window.removeEventListener('touchend', onTouchEnd);
+        globalThis.removeEventListener('mousedown', onMouseDown);
+        globalThis.removeEventListener('mousemove', onMouseMove);
+        globalThis.removeEventListener('mouseup', onMouseUp);
+        globalThis.removeEventListener('touchstart', onTouchStart);
+        globalThis.removeEventListener('touchmove', onTouchMove);
+        globalThis.removeEventListener('touchend', onTouchEnd);
     }
     
     return { mouseState, cleanup };
