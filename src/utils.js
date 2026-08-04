@@ -10,8 +10,9 @@ export function checkWebGLSupport() {
     try {
         const canvas = document.createElement('canvas');
         const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-        return !!(window.WebGLRenderingContext && gl);
-    } catch(e) {
+        return !!(globalThis.WebGLRenderingContext && gl);
+    } catch (e) {
+        console.debug('WebGL support check failed:', e);
         return false;
     }
 }

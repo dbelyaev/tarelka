@@ -25,9 +25,9 @@ export const CONFIG = {
         position: { x: 0, y: 1, z: 2 }
     },
     lighting: {
-        ambient: 1.0,
+        ambient: 1,
         directional1: { intensity: 2.5, position: { x: 2, y: 2, z: 2 } },
-        directional2: { intensity: 2.0, position: { x: -2, y: 0, z: -2 } },
+        directional2: { intensity: 2, position: { x: -2, y: 0, z: -2 } },
         point: { intensity: 1.5, position: { x: 0, y: 3, z: 0 } },
         top: { intensity: 1.5, position: { x: 0, y: 5, z: 0 } }
     },
@@ -43,13 +43,13 @@ export const CONFIG = {
     },
     background: {
         colors: [
-            [1.0, 0.6, 0.0],  // acid orange
-            [1.0, 0.0, 1.0],  // magenta
-            [1.0, 0.0, 0.0],  // red
-            [0.5, 0.0, 0.5],  // purple
-            [0.0, 1.0, 0.0],  // green
-            [0.0, 1.0, 1.0],  // cyan
-            [0.0, 0.0, 1.0]   // blue
+            [1, 0.6, 0],  // acid orange
+            [1, 0, 1],  // magenta
+            [1, 0, 0],  // red
+            [0.5, 0, 0.5],  // purple
+            [0, 1, 0],  // green
+            [0, 1, 1],  // cyan
+            [0, 0, 1]   // blue
         ]
     }
 };

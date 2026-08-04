@@ -22,16 +22,11 @@ export function loadModel(scene, onSuccess, attemptNumber = 1) {
         loadingEl.textContent = '';
         const loadingText = document.createElement('div');
         loadingText.textContent = `Loading... (Attempt ${attemptNumber}/${CONFIG.modelRetryAttempts})`;
-        const progressBar = document.createElement('div');
+        const progressBar = document.createElement('progress');
         progressBar.id = 'progress-bar';
-        progressBar.setAttribute('role', 'progressbar');
         progressBar.setAttribute('aria-label', 'Loading progress');
-        progressBar.setAttribute('aria-valuenow', '0');
-        progressBar.setAttribute('aria-valuemin', '0');
-        progressBar.setAttribute('aria-valuemax', '100');
-        const progressFill = document.createElement('div');
-        progressFill.id = 'progress-fill';
-        progressBar.appendChild(progressFill);
+        progressBar.max = 100;
+        progressBar.value = 0;
         loadingEl.appendChild(loadingText);
         loadingEl.appendChild(progressBar);
     }
@@ -104,16 +99,9 @@ export function loadModel(scene, onSuccess, attemptNumber = 1) {
         },
         function (xhr) {
             // Update progress bar
-            const progressFillEl = document.getElementById('progress-fill');
             const progressBarEl = document.getElementById('progress-bar');
-            if (xhr.lengthComputable && progressFillEl) {
-                const percentComplete = (xhr.loaded / xhr.total) * 100;
-                progressFillEl.style.width = percentComplete + '%';
-                
-                // Update ARIA value for accessibility
-                if (progressBarEl) {
-                    progressBarEl.setAttribute('aria-valuenow', Math.round(percentComplete));
-                }
+            if (xhr.lengthComputable && progressBarEl) {
+                progressBarEl.value = (xhr.loaded / xhr.total) * 100;
             }
         },
         function (error) {

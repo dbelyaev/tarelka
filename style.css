@@ -28,18 +28,32 @@ canvas {
 }
 
 #progress-bar {
+    display: block;
     width: 100%;
     height: 2px;
-    background: rgba(255, 255, 255, 0.2);
     margin-top: 10px;
+    border: none;
     border-radius: 1px;
     overflow: hidden;
+    appearance: none;
+    -webkit-appearance: none;
+    background: rgba(255, 255, 255, 0.2);
 }
 
-#progress-fill {
-    width: 0%;
-    height: 100%;
+#progress-bar::-webkit-progress-bar {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 1px;
+}
+
+#progress-bar::-webkit-progress-value {
     background: white;
+    border-radius: 1px;
+    transition: width 0.1s ease;
+}
+
+#progress-bar::-moz-progress-bar {
+    background: white;
+    border-radius: 1px;
     transition: width 0.1s ease;
 }
 
@@ -162,7 +176,7 @@ canvas {
 
 .retry-button {
     padding: 10px 24px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #4c3fc0 0%, #5f3a8c 100%);
     color: white;
     border: none;
     border-radius: 6px;

@@ -226,7 +226,7 @@ function initializeApp() {
             clearTimeout(notificationTimer);
             notificationTimer = null;
         }
-        if (notificationEl && notificationEl.parentNode) {
+        if (notificationEl?.parentNode) {
             notificationEl.remove();
         }
         notificationEl = null;
@@ -242,7 +242,7 @@ function initializeApp() {
     }
 
     // Expose cleanup function globally
-    window.cleanupThreeJS = cleanup;
+    globalThis.cleanupThreeJS = cleanup;
 
     // Attach resize event listener
     const debouncedResize = debounce(() => onWindowResize(camera, renderer), CONFIG.resize.debounceMs);
@@ -304,14 +304,12 @@ function initializeApp() {
                 cancelAnimationFrame(animationId);
                 animationId = null;
             }
-        } else {
-            if (!animationId) {
-                // Reset the FPS measurement window so the hidden duration
-                // isn't counted as part of the next 1-second sample.
-                frameCount = 0;
-                lastFpsUpdate = performance.now();
-                animationId = requestAnimationFrame(animate);
-            }
+        } else if (!animationId) {
+            // Reset the FPS measurement window so the hidden duration
+            // isn't counted as part of the next 1-second sample.
+            frameCount = 0;
+            lastFpsUpdate = performance.now();
+            animationId = requestAnimationFrame(animate);
         }
     };
     document.addEventListener('visibilitychange', visibilityChangeHandler);
