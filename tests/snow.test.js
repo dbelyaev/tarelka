@@ -56,7 +56,7 @@ describe('SnowEffect', () => {
         setViewport(1600, 1200);
         effect.resize();
 
-        expect(effect.snowflakes.length).toBe(targetFlakeCount(1600, 1200));
+        expect(effect.snowflakes).toHaveLength(targetFlakeCount(1600, 1200));
         expect(effect.snowflakes.length).toBeGreaterThan(before);
         effect.cleanup();
     });
@@ -71,7 +71,7 @@ describe('SnowEffect', () => {
         const target = targetFlakeCount(400, 300);
         const after = countsByLayer(effect);
 
-        expect(effect.snowflakes.length).toBe(target);
+        expect(effect.snowflakes).toHaveLength(target);
         for (const layer of [0, 1, 2]) {
             expect(after[layer] || 0).toBeLessThanOrEqual(before[layer] || 0);
         }
