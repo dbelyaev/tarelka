@@ -24,3 +24,23 @@ updates:
         patterns:
           # use wildcard to bundle plugins and libs into one PR
           - "*"
+
+  - package-ecosystem: "npm"
+    open-pull-requests-limit: 10
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: chore
+      include: scope
+    labels:
+      - javascript
+      - dependencies
+    groups:
+      npm:
+        patterns:
+          # use wildcard to bundle plugins and libs into one PR
+          - "*"
