@@ -9,8 +9,11 @@
  */
 export const SRGBColorSpace = 'srgb';
 
-export class WebGLRenderer {
-    constructor() {
-        throw new Error('THREE.WebGLRenderer is not available under test — pass a fake renderer instead.');
-    }
+/**
+ * Guard that fails loudly if a test reaches for a real WebGL context, which
+ * jsdom cannot provide. Tests exercise renderer sizing through their own fake
+ * renderer instead.
+ */
+export function WebGLRenderer() {
+    throw new Error('THREE.WebGLRenderer is not available under test — pass a fake renderer instead.');
 }
