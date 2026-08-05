@@ -60,6 +60,18 @@ tarelka/
 - **S** - Toggle snow effect on/off
 - **D** - Toggle debug mode (shows renderer statistics in console)
 
+## Development
+
+```bash
+npm ci --ignore-scripts
+npm test
+```
+
+The browser loads three.js from jsdelivr via the import map in `index.html`; there is no build
+step. three.js is *also* an exact-pinned devDependency so the test suite can exercise real
+three.js behaviour instead of a mock. Those two versions must match — `tests/importmap.test.js`
+fails if they drift, so bump both together (and refresh the SRI hashes in the import map).
+
 ## Hosting
 
 This site is hosted via [Cloudflare Pages](https://pages.cloudflare.com/), providing fast global delivery through Cloudflare's edge network.

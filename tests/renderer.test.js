@@ -1,4 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import * as THREE from 'three';
+import { makeMockGL } from './helpers/mock-gl.js';
 
 const originalWidth = window.innerWidth;
 const originalHeight = window.innerHeight;
@@ -16,40 +18,19 @@ async function loadRenderer() {
 }
 
 /**
- * Stand-in for THREE.WebGLRenderer that reproduces how three.js derives the
- * canvas drawing buffer and the GL viewport from a setSize() call: the buffer
- * is floored, the viewport is rounded. If the two disagree the browser logs
- * "drawElementsInstanced: Drawing to a destination rect smaller than the
- * viewport rect".
+ * Build a real THREE.WebGLRenderer on a mock GL context, so assertions run
+ * against three.js's own sizing code rather than a reimplementation of it.
  */
-function createFakeRenderer() {
-    const domElement = document.createElement('canvas');
-    let pixelRatio = 1;
-
-    return {
-        domElement,
-        viewport: { width: 0, height: 0 },
-        setPixelRatio(value) {
-            pixelRatio = value;
-        },
-        getPixelRatio() {
-            return pixelRatio;
-        },
-        setSize(width, height, updateStyle = true) {
-            domElement.width = Math.floor(width * pixelRatio);
-            domElement.height = Math.floor(height * pixelRatio);
-            this.viewport.width = Math.round(width * pixelRatio);
-            this.viewport.height = Math.round(height * pixelRatio);
-            if (updateStyle) {
-                domElement.style.width = `${width}px`;
-                domElement.style.height = `${height}px`;
-            }
-        }
-    };
+function createRealRenderer() {
+    const canvas = document.createElement('canvas');
+    const gl = makeMockGL();
+    const renderer = new THREE.WebGLRenderer({ canvas, context: gl });
+    return { renderer, canvas, gl };
 }
 
 // Viewport/DPR combinations whose product lands on a .5-or-higher fraction,
-// which is what makes floor() and round() diverge.
+// which is what makes three.js's floor() (drawing buffer) and round() (GL
+// viewport) diverge.
 const AWKWARD_VIEWPORTS = [
     [1281, 721, 1],
     [1439, 899, 1.25],
@@ -60,13 +41,13 @@ const AWKWARD_VIEWPORTS = [
     [1, 1, 1.25]
 ];
 
+afterEach(() => {
+    setViewport(originalWidth, originalHeight, originalPixelRatio);
+});
+
 describe('computeRenderSize', () => {
     beforeEach(() => {
         localStorage.clear();
-    });
-
-    afterEach(() => {
-        setViewport(originalWidth, originalHeight, originalPixelRatio);
     });
 
     it('returns whole-pixel buffer dimensions in standard mode', async () => {
@@ -123,10 +104,6 @@ describe('applyRenderSize', () => {
         localStorage.clear();
     });
 
-    afterEach(() => {
-        setViewport(originalWidth, originalHeight, originalPixelRatio);
-    });
-
     for (const ps1Style of [false, true]) {
         it(`keeps the GL viewport within the drawing buffer (ps1Style=${ps1Style})`, async () => {
             if (ps1Style) {
@@ -136,11 +113,14 @@ describe('applyRenderSize', () => {
 
             for (const [width, height, dpr] of AWKWARD_VIEWPORTS) {
                 setViewport(width, height, dpr);
-                const renderer = createFakeRenderer();
+                const { renderer, canvas, gl } = createRealRenderer();
+
                 applyRenderSize(renderer);
 
-                expect(renderer.viewport.width).toBe(renderer.domElement.width);
-                expect(renderer.viewport.height).toBe(renderer.domElement.height);
+                // A viewport wider or taller than the drawing buffer is what makes
+                // browsers warn "Drawing to a destination rect smaller than the
+                // viewport rect".
+                expect(gl.lastViewport).toEqual([0, 0, canvas.width, canvas.height]);
             }
         });
     }
@@ -148,11 +128,26 @@ describe('applyRenderSize', () => {
     it('stretches the canvas over the full viewport via CSS', async () => {
         setViewport(1439, 899, 1.25);
         const { applyRenderSize } = await loadRenderer();
-        const renderer = createFakeRenderer();
+        const { renderer, canvas } = createRealRenderer();
 
         applyRenderSize(renderer);
 
-        expect(renderer.domElement.style.width).toBe('1439px');
-        expect(renderer.domElement.style.height).toBe('899px');
+        expect(canvas.style.width).toBe('1439px');
+        expect(canvas.style.height).toBe('899px');
+    });
+});
+
+describe('three.js sizing behaviour', () => {
+    // Guards the assumption the fix is built on. If a future three.js release
+    // makes the drawing buffer and the viewport agree on their own, this test
+    // fails and applyRenderSize can be simplified.
+    it('still derives the buffer with floor() and the viewport with round()', () => {
+        const { renderer, canvas, gl } = createRealRenderer();
+
+        renderer.setPixelRatio(1);
+        renderer.setSize(640.5, 360.5, false);
+
+        expect([canvas.width, canvas.height]).toEqual([640, 360]);
+        expect(gl.lastViewport).toEqual([0, 0, 641, 361]);
     });
 });
