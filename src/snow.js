@@ -82,7 +82,14 @@ export class SnowEffect {
         // Style canvas
         this.canvas.className = 'snow-canvas';
         this.canvas.setAttribute('aria-hidden', 'true');
-        
+
+        // PS1 mode: draw at a fraction of viewport resolution and let the CSS
+        // upscale with nearest-neighbor filtering, matching the WebGL renderer's
+        // pixelation (see renderer.js computeRenderSize).
+        if (CONFIG.ps1Style) {
+            this.canvas.classList.add('snow-canvas--ps1');
+        }
+
         document.querySelector('main').appendChild(this.canvas);
         
         this.resize();
@@ -93,9 +100,12 @@ export class SnowEffect {
     }
     
     resize() {
-        this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight;
-        
+        const scale = CONFIG.ps1Style ? 1 / CONFIG.ps1PixelScale : 1;
+        this.canvas.width = Math.max(1, Math.floor(window.innerWidth * scale));
+        this.canvas.height = Math.max(1, Math.floor(window.innerHeight * scale));
+        this.canvas.style.width = `${window.innerWidth}px`;
+        this.canvas.style.height = `${window.innerHeight}px`;
+
         const w = this.canvas.width;
         const h = this.canvas.height;
         

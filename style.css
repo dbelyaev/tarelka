@@ -239,6 +239,12 @@ canvas {
     z-index: 1000;
 }
 
+/* Display size is set inline by SnowEffect.resize(); only the upscaling
+   filter is styled here, so the low-res buffer stays crisp instead of blurred. */
+.snow-canvas--ps1 {
+    image-rendering: pixelated;
+}
+
 .sr-only {
     position: absolute;
     width: 1px;
