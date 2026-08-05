@@ -7,7 +7,7 @@
 # render into a shrunken viewport: an old cached src/renderer.js (which relied
 # on a `.renderer--ps1` CSS rule to stretch the low-res buffer) paired with a
 # freshly deployed style.css (that rule was removed once renderer.js started
-# setting the display size inline). Force revalidation on every load instead so
+# setting the display size inline). Force revalidation on every load instead, so
 # app code and styles can never drift apart after a deploy.
 /src/*
   Cache-Control: no-cache

@@ -78,8 +78,8 @@ This site is hosted via [Cloudflare Pages](https://pages.cloudflare.com/), provi
 
 ### Caching
 
-There's no build step and no content-hashed filenames, so `_headers` forces `src/*`
-and `style.css` to revalidate on every request. Without that, Cloudflare's default
+There's no build step and no content-hashed filenames, so `_headers` forces `/src/*`
+and `/style.css` to revalidate on every request.
 `max-age=14400` lets a browser or edge PoP keep serving one file's pre-deploy copy
 for up to 4 hours after a related file has already updated — e.g. an old cached
 `renderer.js` paired with a freshly deployed `style.css` once caused PS1 mode to
