@@ -76,6 +76,16 @@ fails if they drift, so bump both together (and refresh the SRI hashes in the im
 
 This site is hosted via [Cloudflare Pages](https://pages.cloudflare.com/), providing fast global delivery through Cloudflare's edge network.
 
+### Caching
+
+There's no build step and no content-hashed filenames, so `_headers` forces `/src/*`
+and `/style.css` to revalidate on every request.
+`max-age=14400` lets a browser or edge PoP keep serving one file's pre-deploy copy
+for up to 4 hours after a related file has already updated — e.g. an old cached
+`renderer.js` paired with a freshly deployed `style.css` once caused PS1 mode to
+render into a shrunken viewport. `index.html` doesn't need the same treatment;
+Cloudflare Pages already serves it `max-age=0, must-revalidate` by default.
+
 ### Content Security Policy
 
 The page ships a strict CSP with no `'unsafe-inline'`; the single inline script (the

@@ -1,0 +1,16 @@
+# Cloudflare Pages custom headers: https://developers.cloudflare.com/pages/configuration/headers/
+#
+# App code and stylesheet ship unversioned filenames (no build step, no content
+# hashing), so Cloudflare's default `max-age=14400` lets a browser or edge PoP
+# keep serving a pre-deploy copy of one file for up to 4 hours after another,
+# related file has already updated. That skew previously caused PS1 mode to
+# render into a shrunken viewport: an old cached src/renderer.js (which relied
+# on a `.renderer--ps1` CSS rule to stretch the low-res buffer) paired with a
+# freshly deployed style.css (that rule was removed once renderer.js started
+# setting the display size inline). Force revalidation on every load instead, so
+# app code and styles can never drift apart after a deploy.
+/src/*
+  Cache-Control: no-cache
+
+/style.css
+  Cache-Control: no-cache
