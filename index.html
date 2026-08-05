@@ -3,6 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- The sha256 below covers the import map script at the bottom of this file;
+         regenerate it whenever that block changes.
+
+         Cloudflare's Bot Fight Mode injects its own inline script into every
+         response, which this policy blocks — that is the CSP report seen in the
+         browser console. Its hash is per-request (it embeds the ray ID and a
+         timestamp), so it cannot be allowlisted. Disable Bot Fight Mode in the
+         Cloudflare dashboard to silence it; do NOT add 'unsafe-inline' here. -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'sha256-vI0nzAEYVLxmay3D/Ut+CBx4025EygWxYaiGsFc+UO4='; style-src 'self'; img-src 'self' data:; connect-src 'self' https://cdn.jsdelivr.net; manifest-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self';">
     <title>tarelka.xyz</title>
     <meta name="description" content="Interactive 3D model viewer with retro PS1 rendering mode and snow effects.">

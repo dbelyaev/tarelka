@@ -64,6 +64,23 @@ tarelka/
 
 This site is hosted via [Cloudflare Pages](https://pages.cloudflare.com/), providing fast global delivery through Cloudflare's edge network.
 
+### Content Security Policy
+
+The page ships a strict CSP with no `'unsafe-inline'`; the single inline script (the
+import map) is allowed by hash. If that block is edited, regenerate the hash:
+
+```bash
+python3 -c "import re,hashlib,base64;h=open('index.html').read();b=re.search(r'<script type=\"importmap\">(.*?)</script>',h,re.S).group(1);print('sha256-'+base64.b64encode(hashlib.sha256(b.encode()).digest()).decode())"
+```
+
+Cloudflare's **Bot Fight Mode** injects an inline bot-detection script into every
+HTML response. The CSP blocks it, which logs a `script-src-elem` violation in the
+browser console. The injected script embeds a per-request ray ID and timestamp, so
+its hash changes on every load and cannot be allowlisted — and a static site has no
+way to issue a nonce. The block is harmless (only Cloudflare's bot detection fails
+to run), so either leave it or turn Bot Fight Mode off under **Security → Bots** in
+the Cloudflare dashboard. Do not relax the CSP to accommodate it.
+
 ## Attributions
 
 Models used:
