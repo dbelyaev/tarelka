@@ -1,3 +1,33 @@
+/** Fixed getParameter() answers, keyed by the queried constant's name. */
+const FIXED_PARAMETER_VALUES = {
+    VERSION: 'WebGL 2.0',
+    SHADING_LANGUAGE_VERSION: 'WebGL GLSL ES 3.00',
+    VENDOR: 'mock',
+    RENDERER: 'mock',
+    MAX_VIEWPORT_DIMS: [16384, 16384],
+    VIEWPORT: [0, 0, 0, 0],
+    SCISSOR_BOX: [0, 0, 0, 0]
+};
+
+/** Fallback numeric answer for any MAX_* limit not listed above. */
+const DEFAULT_MAX_VALUE = 16384;
+
+/** Fallback numeric answer for every other constant. */
+const DEFAULT_PARAMETER_VALUE = 16;
+
+/**
+ * Value for gl.getParameter(), given the queried constant's name.
+ *
+ * Mixed return type is intentional: WebGL's real getParameter() is polymorphic
+ * by spec (string, number, or array depending on which constant is queried),
+ * and the mock has to match that to stand in for it.
+ */
+function parameterValue(name) { // NOSONAR (javascript:S3800) — see comment above
+    if (name in FIXED_PARAMETER_VALUES) return FIXED_PARAMETER_VALUES[name];
+    if (name?.startsWith('MAX_')) return DEFAULT_MAX_VALUE;
+    return DEFAULT_PARAMETER_VALUE;
+}
+
 /**
  * A mock WebGL2 context, good enough to construct a real THREE.WebGLRenderer.
  *
@@ -15,17 +45,6 @@ export function makeMockGL() {
     const constantNames = new Map(); // id -> constant name
     const constantIds = {};          // constant name -> id
     let nextId = 1;
-
-    /** Values for gl.getParameter(), keyed by the queried constant's name. */
-    function parameterValue(name) {
-        if (name === 'VERSION') return 'WebGL 2.0';
-        if (name === 'SHADING_LANGUAGE_VERSION') return 'WebGL GLSL ES 3.00';
-        if (name === 'VENDOR' || name === 'RENDERER') return 'mock';
-        if (name === 'MAX_VIEWPORT_DIMS') return [16384, 16384];
-        if (name === 'VIEWPORT' || name === 'SCISSOR_BOX') return [0, 0, 0, 0];
-        if (name?.startsWith('MAX_')) return 16384;
-        return 16;
-    }
 
     const gl = {
         /** Arguments of the most recent gl.viewport() call: [x, y, width, height]. */
