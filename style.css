@@ -77,9 +77,9 @@ canvas {
     display: block;
 }
 
+/* Display size is set inline by applyRenderSize(); only the upscaling filter
+   is styled here, so the low-res buffer stays crisp instead of blurred. */
 .renderer--ps1 {
-    width: 100vw;
-    height: 100vh;
     image-rendering: pixelated;
 }
 
