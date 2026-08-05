@@ -5,29 +5,68 @@ import * as THREE from 'three';
 import { CONFIG } from './config.js';
 
 /**
+ * Compute the drawing buffer size in whole device pixels, plus the CSS size the
+ * canvas should be displayed at.
+ *
+ * PS1 mode renders at a fraction of the viewport for the pixelated look;
+ * otherwise the buffer follows devicePixelRatio, capped to avoid excessive fill
+ * rate on 3x+ HiDPI displays.
+ *
+ * @returns {{width: number, height: number, cssWidth: number, cssHeight: number}}
+ */
+export function computeRenderSize() {
+    const cssWidth = window.innerWidth;
+    const cssHeight = window.innerHeight;
+    const scale = CONFIG.ps1Style
+        ? 1 / CONFIG.ps1PixelScale
+        : Math.min(window.devicePixelRatio, CONFIG.renderer.maxPixelRatio);
+
+    return {
+        cssWidth,
+        cssHeight,
+        // Whole device pixels — see applyRenderSize for why this must be integral.
+        width: Math.max(1, Math.floor(cssWidth * scale)),
+        height: Math.max(1, Math.floor(cssHeight * scale))
+    };
+}
+
+/**
+ * Size the renderer's drawing buffer and its CSS display size.
+ *
+ * three.js derives canvas.width from Math.floor(width * pixelRatio) but the GL
+ * viewport from Math.round(width * pixelRatio). When that product lands on a
+ * .5-or-higher fraction the viewport ends up a pixel larger than the drawing
+ * buffer, and browsers warn "Drawing to a destination rect smaller than the
+ * viewport rect". Passing whole device pixels at a 1:1 ratio makes floor() and
+ * round() operate on the same integer, so the two can never diverge; the CSS
+ * size is then applied separately to stretch the buffer over the viewport.
+ *
+ * @param {THREE.WebGLRenderer} renderer
+ */
+export function applyRenderSize(renderer) {
+    const { width, height, cssWidth, cssHeight } = computeRenderSize();
+
+    renderer.setPixelRatio(1);
+    renderer.setSize(width, height, false); // Don't set inline CSS from buffer size
+    renderer.domElement.style.width = `${cssWidth}px`;
+    renderer.domElement.style.height = `${cssHeight}px`;
+}
+
+/**
  * Create and configure the WebGL renderer
  * @returns {THREE.WebGLRenderer}
  */
 export function createRenderer() {
-    const renderer = new THREE.WebGLRenderer({ 
+    const renderer = new THREE.WebGLRenderer({
         antialias: !CONFIG.ps1Style,  // PS1 had no antialiasing
         precision: CONFIG.ps1Style ? 'lowp' : 'highp'  // Lower precision for PS1 look
     });
-    
-    // PS1-style low resolution (scale down for pixelated look)
+
     if (CONFIG.ps1Style) {
-        renderer.setSize(
-            window.innerWidth / CONFIG.ps1PixelScale,
-            window.innerHeight / CONFIG.ps1PixelScale,
-            false // Don't set inline CSS — let .renderer--ps1 control display size
-        );
         renderer.domElement.classList.add('renderer--ps1');
-        renderer.setPixelRatio(1); // Force 1:1 pixel ratio for PS1 look
-    } else {
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, CONFIG.renderer.maxPixelRatio));
     }
-    
+    applyRenderSize(renderer);
+
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.autoClear = false;
     renderer.setClearColor(0x000000, 0);
@@ -67,17 +106,10 @@ export function onWindowResize(camera, renderer) {
     try {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
-        
-        // Maintain PS1-style low resolution if enabled
-        if (CONFIG.ps1Style) {
-            renderer.setSize(
-                window.innerWidth / CONFIG.ps1PixelScale,
-                window.innerHeight / CONFIG.ps1PixelScale,
-                false // Don't set inline CSS — let .renderer--ps1 control display size
-            );
-        } else {
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        }
+
+        // Recomputes the pixel ratio too, so moving the window between displays
+        // with different devicePixelRatio is picked up.
+        applyRenderSize(renderer);
     } catch (resizeError) {
         console.error('Resize error:', resizeError);
     }
