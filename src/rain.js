@@ -13,7 +13,8 @@
  * group, mirroring snow's one-fill()-per-group approach.
  */
 import { CONFIG } from './config.js';
-import { debounce, prefersCoarsePointer } from './utils.js';
+import { prefersCoarsePointer, randomInRange, randomSign } from './utils.js';
+import { CanvasEffect } from './canvas-effect.js';
 
 /** Minimum raindrop count so the effect stays visible on very small viewports */
 const MIN_RAINDROPS = 10;
@@ -28,17 +29,17 @@ class Raindrop {
     }
 
     reset(canvasWidth, canvasHeight, initial = false) {
-        this.x = Math.random() * canvasWidth;
-        this.length = CONFIG.rain.length.min + Math.random() * (CONFIG.rain.length.max - CONFIG.rain.length.min);
-        this.y = initial ? Math.random() * canvasHeight : -this.length;
-        this.speed = CONFIG.rain.speed.min + Math.random() * (CONFIG.rain.speed.max - CONFIG.rain.speed.min);
-        this.opacity = Math.round((CONFIG.rain.opacity.min + Math.random() * (CONFIG.rain.opacity.max - CONFIG.rain.opacity.min)) * 10) / 10;
+        this.x = randomInRange(0, canvasWidth);
+        this.length = randomInRange(CONFIG.rain.length.min, CONFIG.rain.length.max);
+        this.y = initial ? randomInRange(0, canvasHeight) : -this.length;
+        this.speed = randomInRange(CONFIG.rain.speed.min, CONFIG.rain.speed.max);
+        this.opacity = Math.round(randomInRange(CONFIG.rain.opacity.min, CONFIG.rain.opacity.max) * 10) / 10;
         this.strokeStyle = `rgba(200, 215, 235, ${this.opacity})`;
         this.canvasWidth = canvasWidth;
         this.canvasHeight = canvasHeight;
 
         // Wobble a few degrees around the shared base angle so drops aren't perfectly parallel
-        const jitterDeg = (Math.random() - 0.5) * 2 * CONFIG.rain.angleJitter;
+        const jitterDeg = randomInRange(-CONFIG.rain.angleJitter, CONFIG.rain.angleJitter);
         const rad = (this.baseAngleDeg + jitterDeg) * Math.PI / 180;
         this.dirX = Math.sin(rad);
         this.dirY = Math.cos(rad);
@@ -66,57 +67,34 @@ class Raindrop {
 /**
  * Rain effect manager
  */
-export class RainEffect {
+export class RainEffect extends CanvasEffect {
     constructor() {
-        this.canvas = document.createElement('canvas');
-        this.ctx = this.canvas.getContext('2d');
+        super({
+            className: 'rain-canvas',
+            ps1ClassName: 'rain-canvas--ps1',
+            storageKey: 'rainEnabled',
+            // No seasonal default (unlike snow) — rain has no natural "season" signal
+            resolveDefaultEnabled: () => false
+        });
         this.raindrops = [];
-
-        // No seasonal default (unlike snow) — rain has no natural "season" signal, so it
-        // simply respects the persisted preference and otherwise starts disabled.
-        const stored = localStorage.getItem('rainEnabled');
-        this.hasExplicitPreference = stored !== null;
-        this.enabled = stored === 'true';
-
-        // Style canvas
-        this.canvas.className = 'rain-canvas';
-        this.canvas.setAttribute('aria-hidden', 'true');
-
-        if (CONFIG.ps1Style) {
-            this.canvas.classList.add('rain-canvas--ps1');
-        }
-
-        document.querySelector('main').appendChild(this.canvas);
 
         // One base skew angle for the whole instance ("wind direction"); each
         // drop then wobbles a few degrees around it — see Raindrop.reset().
-        const angleDeg = CONFIG.rain.angle.min + Math.random() * (CONFIG.rain.angle.max - CONFIG.rain.angle.min);
-        this.angleDeg = angleDeg * (Math.random() < 0.5 ? 1 : -1);
+        const angleDeg = randomInRange(CONFIG.rain.angle.min, CONFIG.rain.angle.max);
+        this.angleDeg = angleDeg * randomSign();
 
         this.resize();
-
-        // Handle window resize (debounced to match renderer resize behavior)
-        this.resizeHandler = debounce(() => this.resize(), CONFIG.resize.debounceMs);
-        window.addEventListener('resize', this.resizeHandler);
+        this._startResizeListener();
     }
 
-    resize() {
-        const scale = CONFIG.ps1Style ? 1 / CONFIG.ps1PixelScale : 1;
-        this.canvas.width = Math.max(1, Math.floor(window.innerWidth * scale));
-        this.canvas.height = Math.max(1, Math.floor(window.innerHeight * scale));
-        this.canvas.style.width = `${window.innerWidth}px`;
-        this.canvas.style.height = `${window.innerHeight}px`;
-
-        const w = this.canvas.width;
-        const h = this.canvas.height;
-
+    _syncParticles(canvasWidth, canvasHeight) {
         // Update existing raindrops with new dimensions
         this.raindrops.forEach(drop => {
-            drop.canvasWidth = w;
-            drop.canvasHeight = h;
+            drop.canvasWidth = canvasWidth;
+            drop.canvasHeight = canvasHeight;
         });
 
-        this._adjustDropCount(w, h);
+        this._adjustDropCount(canvasWidth, canvasHeight);
     }
 
     /**
@@ -175,20 +153,5 @@ export class RainEffect {
             ctx.strokeStyle = style;
             ctx.stroke(path);
         }
-    }
-
-    toggle() {
-        this.enabled = !this.enabled;
-        this.hasExplicitPreference = true;
-        localStorage.setItem('rainEnabled', String(this.enabled));
-        if (!this.enabled) {
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        }
-    }
-
-    cleanup() {
-        this.resizeHandler.cancel();
-        window.removeEventListener('resize', this.resizeHandler);
-        this.canvas.remove();
     }
 }

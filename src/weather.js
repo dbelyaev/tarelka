@@ -13,8 +13,7 @@ export function createWeatherGroup(weathers) {
     // on by seasonal default — snow must lose that tie, not win it by array order).
     const alreadyEnabled = weathers.filter(w => w.effect.enabled);
     if (alreadyEnabled.length > 1) {
-        const explicit = alreadyEnabled.filter(w => w.effect.hasExplicitPreference);
-        const winner = explicit[0] ?? alreadyEnabled[0];
+        const winner = alreadyEnabled.find(w => w.effect.hasExplicitPreference) ?? alreadyEnabled[0];
         alreadyEnabled.filter(w => w !== winner).forEach(w => w.effect.toggle());
     }
 

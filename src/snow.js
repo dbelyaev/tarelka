@@ -7,7 +7,8 @@
  * visually indistinguishable from squares at that size.
  */
 import { CONFIG } from './config.js';
-import { isSnowSeason, debounce, prefersCoarsePointer } from './utils.js';
+import { isSnowSeason, prefersCoarsePointer } from './utils.js';
+import { CanvasEffect } from './canvas-effect.js';
 
 /** Layer distribution ratios: background, middle, foreground */
 const LAYER_DISTRIBUTION = [0.3, 0.4, 0.3];
@@ -69,57 +70,35 @@ class Snowflake {
 /**
  * Snow effect manager
  */
-export class SnowEffect {
+export class SnowEffect extends CanvasEffect {
     constructor() {
-        this.canvas = document.createElement('canvas');
-        this.ctx = this.canvas.getContext('2d');
+        super({
+            className: 'snow-canvas',
+            // PS1 mode: draw at a fraction of viewport resolution and let the CSS
+            // upscale with nearest-neighbor filtering, matching the WebGL renderer's
+            // pixelation (see renderer.js computeRenderSize).
+            ps1ClassName: 'snow-canvas--ps1',
+            storageKey: 'snowEnabled',
+            // Respect user preference, fall back to the seasonal default
+            resolveDefaultEnabled: () => isSnowSeason(CONFIG.snow.winterMonths)
+        });
         this.snowflakes = [];
-        
-        // Determine snow enabled state: respect user preference, fall back to seasonal default
-        const stored = localStorage.getItem('snowEnabled');
-        this.hasExplicitPreference = stored !== null;
-        this.enabled = stored === null ? isSnowSeason(CONFIG.snow.winterMonths) : stored === 'true';
-        
-        // Style canvas
-        this.canvas.className = 'snow-canvas';
-        this.canvas.setAttribute('aria-hidden', 'true');
 
-        // PS1 mode: draw at a fraction of viewport resolution and let the CSS
-        // upscale with nearest-neighbor filtering, matching the WebGL renderer's
-        // pixelation (see renderer.js computeRenderSize).
-        if (CONFIG.ps1Style) {
-            this.canvas.classList.add('snow-canvas--ps1');
-        }
-
-        document.querySelector('main').appendChild(this.canvas);
-        
         this.resize();
-        
-        // Handle window resize (debounced to match renderer resize behavior)
-        this.resizeHandler = debounce(() => this.resize(), CONFIG.resize.debounceMs);
-        window.addEventListener('resize', this.resizeHandler);
+        this._startResizeListener();
     }
-    
-    resize() {
-        const scale = CONFIG.ps1Style ? 1 / CONFIG.ps1PixelScale : 1;
-        this.canvas.width = Math.max(1, Math.floor(window.innerWidth * scale));
-        this.canvas.height = Math.max(1, Math.floor(window.innerHeight * scale));
-        this.canvas.style.width = `${window.innerWidth}px`;
-        this.canvas.style.height = `${window.innerHeight}px`;
 
-        const w = this.canvas.width;
-        const h = this.canvas.height;
-        
+    _syncParticles(canvasWidth, canvasHeight) {
         // Update existing snowflakes with new dimensions
         this.snowflakes.forEach(flake => {
-            flake.canvasWidth = w;
-            flake.canvasHeight = h;
+            flake.canvasWidth = canvasWidth;
+            flake.canvasHeight = canvasHeight;
         });
-        
+
         // Recalculate target flake count for the new viewport area
-        this._adjustFlakeCount(w, h);
+        this._adjustFlakeCount(canvasWidth, canvasHeight);
     }
-    
+
     /**
      * Adjust snowflake count to match the target for the current viewport.
      * Adds or removes flakes proportionally across layers.
@@ -248,20 +227,5 @@ export class SnowEffect {
                 ctx.fill(path);
             }
         }
-    }
-    
-    toggle() {
-        this.enabled = !this.enabled;
-        this.hasExplicitPreference = true;
-        localStorage.setItem('snowEnabled', String(this.enabled));
-        if (!this.enabled) {
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        }
-    }
-    
-    cleanup() {
-        this.resizeHandler.cancel();
-        window.removeEventListener('resize', this.resizeHandler);
-        this.canvas.remove();
     }
 }
