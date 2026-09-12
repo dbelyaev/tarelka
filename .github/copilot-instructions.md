@@ -14,6 +14,7 @@ npm test                  # runs `vitest run` (full suite)
 - Run tests matching a name: `npx vitest run -t "some test name"`
 - Tests use jsdom by default (`vitest.config.js`); files that need to read real files off disk
   (e.g. `tests/importmap.test.js`) opt into `// @vitest-environment node` at the top of the file.
+- There are no build or lint scripts in `package.json` — `npm test` is the only script defined.
 
 ## Architecture
 
@@ -22,20 +23,22 @@ npm test                  # runs `vitest run` (full suite)
 - `three` is *also* an exact-pinned devDependency purely so the test suite can exercise real
   three.js behavior instead of a mock — it is never bundled or shipped.
 - **The CDN-loaded version (import map in `index.html`) and the npm devDependency version
-  (`package.json`) must always match exactly.** `tests/importmap.test.js` enforces this and fails
-  the build on drift. When bumping three.js, update both together and regenerate the SRI hashes
-  (`sha384-...`) in the import map for every mapped CDN URL.
+  (`package.json`) must always match exactly.** There is no build to fail — `tests/importmap.test.js`
+  is the only enforcement, and it fails `npm test` on drift. When bumping three.js, update both
+  together and regenerate the SRI hashes (`sha384-...`) in the import map for every mapped CDN URL.
 - Module responsibilities (`src/`):
   - `main.js` — entry point, animation loop, WebGL support check, cleanup
-  - `config.js` — all tunable constants (`CONFIG` object): PS1 style, camera, lighting, rotation, snow
+  - `config.js` — shared application settings (`CONFIG` object): PS1 style, camera, lighting, rotation
   - `scene.js` — scene/background/camera/lighting construction
   - `renderer.js` — WebGL renderer setup, context-loss handlers, resize handling
   - `loader.js` — model loading with retry logic and progress tracking
   - `controls.js` — mouse/touch drag-to-rotate with inertia
-  - `snow.js` — parallax snowflake effect (3 layers)
+  - `snow.js` — parallax snowflake effect (3 layers); also owns its own tuning constants
+    (`LAYER_DISTRIBUTION`, `SMALL_FLAKE_THRESHOLD`, `MIN_SNOWFLAKES`) outside of `CONFIG`
   - `utils.js` — WebGL capability check, debounce, material disposal
-- Feature toggles are keyboard-driven and persisted in `localStorage`: `P` = PS1 style (needs
-  reload), `S` = snow effect, `D` = debug/renderer stats in console.
+- Feature toggles are keyboard-driven: `P` = PS1 style and `S` = snow effect both persist their
+  state to `localStorage` (`P` requires a reload to take effect); `D` = debug/renderer stats only
+  flips `CONFIG.debug` in memory and resets on reload — it is not persisted.
 - `index.html` ships a strict CSP (no `'unsafe-inline'`). The only inline script is the import map,
   allowed via a sha256 hash in the CSP meta tag — regenerate that hash whenever the import map JSON
   changes:
@@ -47,10 +50,12 @@ npm test                  # runs `vitest run` (full suite)
 
 ## Deployment / caching notes
 
-- Hosted on Cloudflare Pages with no build step and no content-hashed filenames. `_headers` forces
-  `/src/*` and `/style.css` to revalidate on every request, but still allows `max-age=14400` — a
-  stale cached file can be paired with a freshly deployed one for up to 4 hours across an edge PoP.
-  Keep this in mind when changing cross-file contracts (e.g. CSS classes referenced from JS).
+- Hosted on Cloudflare Pages with no build step and no content-hashed filenames. `_headers` sets
+  `Cache-Control: no-cache` for `/src/*` and `/style.css`, forcing revalidation on every request so
+  app code and styles can never drift apart after a deploy (Cloudflare's default `max-age=14400`
+  previously let a stale cached file pair with a freshly deployed one for up to 4 hours, which once
+  broke PS1 mode's viewport sizing). Keep this override in mind when changing cross-file contracts
+  (e.g. CSS classes referenced from JS).
 
 ## Conventions
 
