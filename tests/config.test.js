@@ -38,4 +38,9 @@ describe('CONFIG', () => {
         const CONFIG = await loadConfig();
         expect(CONFIG.snow.winterMonths).toEqual([12, 1]);
     });
+
+    it('defines the rain skew angle range', async () => {
+        const CONFIG = await loadConfig();
+        expect(CONFIG.rain.angle).toEqual({ min: 30, max: 45 });
+    });
 });

@@ -25,6 +25,8 @@ tarelka/
 │   ├── loader.js       # Model loading with retry logic
 │   ├── controls.js     # Mouse and touch interaction
 │   ├── snow.js         # Snow effect with parallax layers
+│   ├── rain.js         # Rain effect with skewed pixelated streaks
+│   ├── weather.js      # Coordinates mutually-exclusive weather effects
 │   └── utils.js        # Utility functions
 ├── assets/
 │   ├── models/         # 3D models
@@ -43,6 +45,8 @@ tarelka/
 - **`src/loader.js`** - Model loading with retry logic, progress tracking, error handling
 - **`src/controls.js`** - Mouse and touch events, rotation with inertia, drag-to-rotate
 - **`src/snow.js`** - Animated snow effect with 3 parallax layers for depth
+- **`src/rain.js`** - Animated rain effect with short, skewed, pixelated streaks
+- **`src/weather.js`** - Coordinates mutually-exclusive weather effects (snow, rain)
 - **`src/utils.js`** - WebGL support check, debounce function, material disposal
 
 ## Features
@@ -50,14 +54,18 @@ tarelka/
 - **Interactive 3D Model** - Drag to rotate, inertia-based movement
 - **PS1 Graphics Mode** - Retro PlayStation 1 style rendering (press **P** to toggle)
 - **Snow Effect** - Falling snowflakes with parallax layers (press **S** to toggle)
+- **Rain Effect** - Falling rain at a skewed angle (press **R** to toggle)
 - **Touch Support** - Full mobile and tablet support
 - **Responsive Design** - Adapts to any screen size
 - **WebGL Optimization** - Pauses rendering when tab is inactive
 
+Snow and rain are mutually exclusive — enabling one turns off the other.
+
 ## Keyboard Controls
 
 - **P** - Toggle PS1 graphics style (requires page reload)
-- **S** - Toggle snow effect on/off
+- **S** - Toggle snow effect on/off (disables rain if active)
+- **R** - Toggle rain effect on/off (disables snow if active)
 - **D** - Toggle debug mode (shows renderer statistics in console)
 
 ## Development
