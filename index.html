@@ -11,7 +11,7 @@
          browser console. Its hash is per-request (it embeds the ray ID and a
          timestamp), so it cannot be allowlisted. Disable Bot Fight Mode in the
          Cloudflare dashboard to silence it; do NOT add 'unsafe-inline' here. -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'sha256-vI0nzAEYVLxmay3D/Ut+CBx4025EygWxYaiGsFc+UO4='; style-src 'self'; img-src 'self' data:; connect-src 'self' https://cdn.jsdelivr.net; manifest-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'sha256-1aMU0yYVJTjZChQAnujX11dJ0dAli8K4jc5usato5PE='; style-src 'self'; img-src 'self' data:; connect-src 'self' https://cdn.jsdelivr.net; manifest-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self';">
     <title>tarelka.xyz</title>
     <meta name="description" content="Interactive 3D model viewer with retro PS1 rendering mode and snow effects.">
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
@@ -41,15 +41,15 @@
     <script type="importmap">
         {
             "imports": {
-                "three": "https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js",
-                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/"
+                "three": "https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.185.1/examples/jsm/"
             },
             "integrity": {
-                "https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js": "sha384-8FCZ1eVO6it4+pbec2aDtnTrwjWXZLJRC+MAGCIPDgsYnUrl/E0A2YlF8ioMKI/J",
-                "https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/loaders/FBXLoader.js": "sha384-3kH2mLWOteHjouD6GIU6zmaZMRk3DkxQW8vS+7HrqRGYPn6VYPdCCOdCliMUlQKJ",
-                "https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/libs/fflate.module.js": "sha384-WfAf3P1ihuiJhAj/FmfdKxOqoKSzTJ1JQEyTB4vuhzg+4QYUKf4Abi6Bijn0sbr6",
-                "https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/curves/NURBSCurve.js": "sha384-8pYUrQOD/9icWJHIt9sPF3RqL+xHDGW/PKtsHU4y+foOUIS2i5zUF3zp+20rlCA/",
-                "https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/curves/NURBSUtils.js": "sha384-Cu2oZY5IDaRj/C7bT2XpamgZ2jLza8cD0U0CnHiQGpqP1AaHd/W2G44FIJBWXrzX"
+                "https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.module.js": "sha384-Ecdwhw2t8c3nTR0hkEDZbwj+5rkKqzJ376RCQN2x1uofujOCuW/EvGg3BQzE7TS6",
+                "https://cdn.jsdelivr.net/npm/three@0.185.1/examples/jsm/loaders/FBXLoader.js": "sha384-3kH2mLWOteHjouD6GIU6zmaZMRk3DkxQW8vS+7HrqRGYPn6VYPdCCOdCliMUlQKJ",
+                "https://cdn.jsdelivr.net/npm/three@0.185.1/examples/jsm/libs/fflate.module.js": "sha384-WfAf3P1ihuiJhAj/FmfdKxOqoKSzTJ1JQEyTB4vuhzg+4QYUKf4Abi6Bijn0sbr6",
+                "https://cdn.jsdelivr.net/npm/three@0.185.1/examples/jsm/curves/NURBSCurve.js": "sha384-8pYUrQOD/9icWJHIt9sPF3RqL+xHDGW/PKtsHU4y+foOUIS2i5zUF3zp+20rlCA/",
+                "https://cdn.jsdelivr.net/npm/three@0.185.1/examples/jsm/curves/NURBSUtils.js": "sha384-Cu2oZY5IDaRj/C7bT2XpamgZ2jLza8cD0U0CnHiQGpqP1AaHd/W2G44FIJBWXrzX"
             }
         }
     </script>
