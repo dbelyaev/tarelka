@@ -19,10 +19,18 @@ export function createWeatherGroup(weathers) {
 
     return {
         toggle(target) {
-            weathers.forEach(w => {
-                if (w !== target && w.effect.enabled) w.effect.toggle();
-            });
+            // Toggle the target first and only disable its peers on a confirmed
+            // false-to-true transition. A failed effect construction falls back to a
+            // no-op stub (see main.js) whose toggle() never flips .enabled — disabling
+            // peers unconditionally would turn off a working effect while the broken
+            // one silently stays off.
+            const wasEnabled = target.effect.enabled;
             target.effect.toggle();
+            if (!wasEnabled && target.effect.enabled) {
+                weathers.forEach(w => {
+                    if (w !== target && w.effect.enabled) w.effect.toggle();
+                });
+            }
         }
     };
 }

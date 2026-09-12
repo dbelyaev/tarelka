@@ -56,6 +56,20 @@ describe('createWeatherGroup', () => {
         expect(snow.effect.enabled).toBe(false);
     });
 
+    it('leaves a working effect on when the target failed to construct (no-op toggle stub)', () => {
+        // Regression: main.js falls back to a no-op stub ({ enabled: false, toggle: () => {}, ... })
+        // when an effect throws during construction. Its toggle() never flips .enabled, so
+        // disabling peers unconditionally would silently turn off a working effect for nothing.
+        const snow = fakeWeather('Snow', true);
+        const brokenRain = { effect: { enabled: false, toggle: vi.fn() }, label: 'Rain' };
+        const group = createWeatherGroup([snow, brokenRain]);
+
+        group.toggle(brokenRain);
+
+        expect(brokenRain.effect.enabled).toBe(false);
+        expect(snow.effect.enabled).toBe(true);
+    });
+
     it('toggles normally in a single-effect group', () => {
         const snow = fakeWeather('Snow', false);
         const group = createWeatherGroup([snow]);

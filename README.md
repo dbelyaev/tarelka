@@ -27,6 +27,7 @@ tarelka/
 │   ├── snow.js         # Snow effect with parallax layers
 │   ├── rain.js         # Rain effect with skewed pixelated streaks
 │   ├── weather.js      # Coordinates mutually-exclusive weather effects
+│   ├── canvas-effect.js # Shared canvas overlay lifecycle for snow/rain
 │   └── utils.js        # Utility functions
 ├── assets/
 │   ├── models/         # 3D models
@@ -47,6 +48,7 @@ tarelka/
 - **`src/snow.js`** - Animated snow effect with 3 parallax layers for depth
 - **`src/rain.js`** - Animated rain effect with short, skewed, pixelated streaks
 - **`src/weather.js`** - Coordinates mutually-exclusive weather effects (snow, rain)
+- **`src/canvas-effect.js`** - Shared canvas create/resize/toggle/cleanup lifecycle used by snow and rain
 - **`src/utils.js`** - WebGL support check, debounce function, material disposal
 
 ## Features
