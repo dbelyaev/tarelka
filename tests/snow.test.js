@@ -83,6 +83,7 @@ describe('SnowEffect', () => {
         localStorage.setItem('snowEnabled', 'false');
         const effect = new SnowEffect();
         expect(effect.enabled).toBe(false);
+        expect(effect.hasExplicitPreference).toBe(true);
         effect.cleanup();
     });
 
@@ -90,10 +91,17 @@ describe('SnowEffect', () => {
         localStorage.setItem('snowEnabled', 'true');
         const effect = new SnowEffect();
         expect(effect.enabled).toBe(true);
+        expect(effect.hasExplicitPreference).toBe(true);
         effect.cleanup();
     });
 
-    it('toggle() flips enabled state and persists it', () => {
+    it('marks the seasonal default as non-explicit when nothing is persisted', () => {
+        const effect = new SnowEffect();
+        expect(effect.hasExplicitPreference).toBe(false);
+        effect.cleanup();
+    });
+
+    it('toggle() flips enabled state, persists it, and marks the preference explicit', () => {
         const effect = new SnowEffect();
         const initial = effect.enabled;
 
@@ -101,6 +109,7 @@ describe('SnowEffect', () => {
 
         expect(effect.enabled).toBe(!initial);
         expect(localStorage.getItem('snowEnabled')).toBe(String(!initial));
+        expect(effect.hasExplicitPreference).toBe(true);
         effect.cleanup();
     });
 

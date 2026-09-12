@@ -67,6 +67,7 @@ describe('RainEffect', () => {
     it('defaults to disabled when no preference is persisted', () => {
         const effect = new RainEffect();
         expect(effect.enabled).toBe(false);
+        expect(effect.hasExplicitPreference).toBe(false);
         effect.cleanup();
     });
 
@@ -74,6 +75,7 @@ describe('RainEffect', () => {
         localStorage.setItem('rainEnabled', 'false');
         const effect = new RainEffect();
         expect(effect.enabled).toBe(false);
+        expect(effect.hasExplicitPreference).toBe(true);
         effect.cleanup();
     });
 
@@ -81,10 +83,11 @@ describe('RainEffect', () => {
         localStorage.setItem('rainEnabled', 'true');
         const effect = new RainEffect();
         expect(effect.enabled).toBe(true);
+        expect(effect.hasExplicitPreference).toBe(true);
         effect.cleanup();
     });
 
-    it('toggle() flips enabled state and persists it', () => {
+    it('toggle() flips enabled state, persists it, and marks the preference explicit', () => {
         const effect = new RainEffect();
         const initial = effect.enabled;
 
@@ -92,6 +95,7 @@ describe('RainEffect', () => {
 
         expect(effect.enabled).toBe(!initial);
         expect(localStorage.getItem('rainEnabled')).toBe(String(!initial));
+        expect(effect.hasExplicitPreference).toBe(true);
         effect.cleanup();
     });
 

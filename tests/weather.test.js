@@ -1,11 +1,13 @@
 import { describe, it, expect, vi } from 'vitest';
 import { createWeatherGroup } from '../src/weather.js';
 
-function fakeWeather(label, enabled = false) {
+function fakeWeather(label, enabled = false, hasExplicitPreference = false) {
     const effect = {
         enabled,
+        hasExplicitPreference,
         toggle: vi.fn(function () {
             this.enabled = !this.enabled;
+            this.hasExplicitPreference = true;
         })
     };
     return { effect, label };
@@ -41,6 +43,17 @@ describe('createWeatherGroup', () => {
 
         expect(snow.effect.enabled).toBe(true);
         expect(rain.effect.enabled).toBe(false);
+    });
+
+    it('prefers an explicitly-chosen effect over one enabled only by a fallback default', () => {
+        // Regression: snow enabled by its seasonal default, rain enabled by an explicit
+        // user choice — snow must lose the tie despite being first in the array.
+        const snow = fakeWeather('Snow', true, false);
+        const rain = fakeWeather('Rain', true, true);
+        createWeatherGroup([snow, rain]);
+
+        expect(rain.effect.enabled).toBe(true);
+        expect(snow.effect.enabled).toBe(false);
     });
 
     it('toggles normally in a single-effect group', () => {

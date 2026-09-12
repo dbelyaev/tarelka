@@ -74,7 +74,9 @@ export class RainEffect {
 
         // No seasonal default (unlike snow) — rain has no natural "season" signal, so it
         // simply respects the persisted preference and otherwise starts disabled.
-        this.enabled = localStorage.getItem('rainEnabled') === 'true';
+        const stored = localStorage.getItem('rainEnabled');
+        this.hasExplicitPreference = stored !== null;
+        this.enabled = stored === 'true';
 
         // Style canvas
         this.canvas.className = 'rain-canvas';
@@ -177,6 +179,7 @@ export class RainEffect {
 
     toggle() {
         this.enabled = !this.enabled;
+        this.hasExplicitPreference = true;
         localStorage.setItem('rainEnabled', String(this.enabled));
         if (!this.enabled) {
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);

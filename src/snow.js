@@ -77,6 +77,7 @@ export class SnowEffect {
         
         // Determine snow enabled state: respect user preference, fall back to seasonal default
         const stored = localStorage.getItem('snowEnabled');
+        this.hasExplicitPreference = stored !== null;
         this.enabled = stored === null ? isSnowSeason(CONFIG.snow.winterMonths) : stored === 'true';
         
         // Style canvas
@@ -251,6 +252,7 @@ export class SnowEffect {
     
     toggle() {
         this.enabled = !this.enabled;
+        this.hasExplicitPreference = true;
         localStorage.setItem('snowEnabled', String(this.enabled));
         if (!this.enabled) {
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
