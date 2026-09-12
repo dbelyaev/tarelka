@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { checkWebGLSupport, debounce, isSnowSeason, disposeMaterial } from '../src/utils.js';
+import { checkWebGLSupport, debounce, isSnowSeason, disposeMaterial, prefersCoarsePointer } from '../src/utils.js';
 
 describe('checkWebGLSupport', () => {
     it('returns false when the canvas cannot produce a WebGL context', () => {
@@ -78,6 +78,33 @@ describe('isSnowSeason', () => {
     it('returns false for a non-array argument', () => {
         expect(isSnowSeason(null)).toBe(false);
         expect(isSnowSeason(undefined)).toBe(false);
+    });
+});
+
+describe('prefersCoarsePointer', () => {
+    afterEach(() => {
+        delete window.matchMedia;
+    });
+
+    it('returns false when matchMedia is unavailable (default jsdom environment)', () => {
+        expect(typeof window.matchMedia).toBe('undefined');
+        expect(prefersCoarsePointer()).toBe(false);
+    });
+
+    it('returns true when matchMedia reports a coarse pointer', () => {
+        Object.defineProperty(window, 'matchMedia', {
+            configurable: true,
+            value: vi.fn(() => ({ matches: true }))
+        });
+        expect(prefersCoarsePointer()).toBe(true);
+    });
+
+    it('returns false when matchMedia reports no match', () => {
+        Object.defineProperty(window, 'matchMedia', {
+            configurable: true,
+            value: vi.fn(() => ({ matches: false }))
+        });
+        expect(prefersCoarsePointer()).toBe(false);
     });
 });
 

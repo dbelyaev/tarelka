@@ -9,6 +9,8 @@ import { createRenderer, setupContextHandlers, onWindowResize, logRendererInfo }
 import { loadModel } from './loader.js';
 import { initializeControls, updateRotation } from './controls.js';
 import { SnowEffect } from './snow.js';
+import { RainEffect } from './rain.js';
+import { createWeatherGroup } from './weather.js';
 
 // Wait for DOM to be fully loaded
 function initializeApp() {
@@ -47,14 +49,34 @@ function initializeApp() {
         snowEffect = new SnowEffect();
     } catch (error) {
         console.error('Failed to initialize snow effect:', error);
-        snowEffect = { 
-            update: () => {}, 
-            draw: () => {}, 
-            toggle: () => {}, 
+        snowEffect = {
+            update: () => {},
+            draw: () => {},
+            toggle: () => {},
             cleanup: () => {},
-            enabled: false 
+            enabled: false
         };
     }
+
+    // Initialize rain effect
+    let rainEffect;
+    try {
+        rainEffect = new RainEffect();
+    } catch (error) {
+        console.error('Failed to initialize rain effect:', error);
+        rainEffect = {
+            update: () => {},
+            draw: () => {},
+            toggle: () => {},
+            cleanup: () => {},
+            enabled: false
+        };
+    }
+
+    // Snow and rain are mutually exclusive — enabling one disables the other
+    const snowWeather = { effect: snowEffect, label: 'Snow' };
+    const rainWeather = { effect: rainEffect, label: 'Rain' };
+    const weatherGroup = createWeatherGroup([snowWeather, rainWeather]);
 
     // Initialize controls
     const { mouseState, cleanup: cleanupControls } = initializeControls();
@@ -133,7 +155,10 @@ function initializeApp() {
         
         // Update snow effect
         snowEffect.update(delta);
-        
+
+        // Update rain effect
+        rainEffect.update(delta);
+
         // Clear and render
         renderer.clear();
         renderer.render(backgroundScene, backgroundCamera);
@@ -160,6 +185,9 @@ function initializeApp() {
         
         // Draw snow effect on top
         snowEffect.draw();
+
+        // Draw rain effect on top
+        rainEffect.draw();
     }
 
     /**
@@ -217,7 +245,10 @@ function initializeApp() {
         
         // Cleanup snow effect
         snowEffect.cleanup();
-        
+
+        // Cleanup rain effect
+        rainEffect.cleanup();
+
         // Stop debug monitoring
         stopDebugMonitoring();
         
@@ -281,10 +312,15 @@ function initializeApp() {
         }
         
         if (e.key === 's' || e.key === 'S') {
-            snowEffect.toggle();
+            weatherGroup.toggle(snowWeather);
             showNotification(`Snow Effect: ${snowEffect.enabled ? 'ON' : 'OFF'}`);
         }
-        
+
+        if (e.key === 'r' || e.key === 'R') {
+            weatherGroup.toggle(rainWeather);
+            showNotification(`Rain Effect: ${rainEffect.enabled ? 'ON' : 'OFF'}`);
+        }
+
         if (e.key === 'd' || e.key === 'D') {
             CONFIG.debug = !CONFIG.debug;
             if (CONFIG.debug) {

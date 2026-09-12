@@ -36,6 +36,35 @@ export function debounce(func, wait) {
 }
 
 /**
+ * Check if the device's primary pointer is coarse (touch), used as a proxy for
+ * mobile-class hardware to scale down particle-effect density.
+ * @returns {boolean} True if matchMedia is available and reports a coarse pointer
+ */
+export function prefersCoarsePointer() {
+    return typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches;
+}
+
+/**
+ * Non-cryptographic uniform random number in [min, max). Only used for cosmetic
+ * randomness in particle effects (position/speed/angle) — never anything
+ * security-sensitive, so Math.random() is the right tool here.
+ * @param {number} min
+ * @param {number} max
+ * @returns {number}
+ */
+export function randomInRange(min, max) {
+    return min + Math.random() * (max - min); // NOSONAR - decorative randomness, not security-sensitive
+}
+
+/**
+ * Returns 1 or -1 with equal probability. Same non-cryptographic-use note as randomInRange.
+ * @returns {number}
+ */
+export function randomSign() {
+    return Math.random() < 0.5 ? 1 : -1; // NOSONAR - decorative randomness, not security-sensitive
+}
+
+/**
  * Check if the current month falls within the configured winter months
  * @param {number[]} winterMonths - Array of month numbers (1-12)
  * @returns {boolean} True if current month is in the winter months array

@@ -38,6 +38,18 @@ export const CONFIG = {
         winterMonths: [12, 1], // Months when snow is enabled by default (1-indexed: 12=Dec, 1=Jan)
         flakesPerArea: 8000 // Viewport area (px²) per snowflake
     },
+    rain: {
+        dropsPerArea: 12000, // Viewport area (px²) per raindrop — lower density than snow since each drop is a longer streak
+        length: { min: 10, max: 20 }, // Streak length in canvas px, pre-CSS-upscale
+        speed: { min: 6, max: 16 }, // Fall speed along the skew direction
+        angle: { min: 30, max: 45 }, // Degrees from vertical; one base value rolled per RainEffect instance
+        angleJitter: 6, // Degrees of per-drop wobble applied around the shared base angle
+        lineWidth: 2,
+        opacity: { min: 0.4, max: 0.8 } // Quantized to 0.1 for batched stroke() calls
+    },
+    performance: {
+        mobileParticleScale: 0.6 // Density multiplier for snow/rain particle counts on coarse-pointer (mobile-class) devices
+    },
     resize: {
         debounceMs: 100
     },
