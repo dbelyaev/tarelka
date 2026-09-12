@@ -43,4 +43,14 @@ describe('CONFIG', () => {
         const CONFIG = await loadConfig();
         expect(CONFIG.rain.angle).toEqual({ min: 30, max: 45 });
     });
+
+    it('defines the per-drop rain angle jitter', async () => {
+        const CONFIG = await loadConfig();
+        expect(CONFIG.rain.angleJitter).toBe(6);
+    });
+
+    it('defines the mobile particle density scale', async () => {
+        const CONFIG = await loadConfig();
+        expect(CONFIG.performance.mobileParticleScale).toBe(0.6);
+    });
 });

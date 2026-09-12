@@ -110,4 +110,42 @@ describe('RainEffect', () => {
         expect(Math.abs(effect.angleDeg)).toBeLessThanOrEqual(CONFIG.rain.angle.max);
         effect.cleanup();
     });
+
+    it('jitters each drop\'s angle around the shared base angle instead of all sharing one direction', () => {
+        const effect = new RainEffect();
+
+        const distinctDirections = new Set(effect.raindrops.map(d => d.dirX));
+        expect(distinctDirections.size).toBeGreaterThan(1);
+
+        for (const drop of effect.raindrops) {
+            const dropAngleDeg = Math.atan2(drop.dirX, drop.dirY) * 180 / Math.PI;
+            const delta = Math.abs(dropAngleDeg - effect.angleDeg);
+            expect(delta).toBeLessThanOrEqual(CONFIG.rain.angleJitter + 1e-9);
+        }
+
+        effect.cleanup();
+    });
+
+    it('scales down drop density on coarse-pointer (mobile-class) devices', () => {
+        const baseline = new RainEffect();
+        const baselineCount = baseline.raindrops.length;
+        baseline.cleanup();
+
+        Object.defineProperty(window, 'matchMedia', {
+            configurable: true,
+            value: vi.fn(() => ({ matches: true }))
+        });
+
+        const mobile = new RainEffect();
+        const expectedMobileCount = Math.max(
+            Math.floor((800 * 600 * CONFIG.performance.mobileParticleScale) / 12000),
+            MIN_RAINDROPS
+        );
+
+        expect(mobile.raindrops).toHaveLength(expectedMobileCount);
+        expect(mobile.raindrops.length).toBeLessThan(baselineCount);
+
+        mobile.cleanup();
+        delete window.matchMedia;
+    });
 });

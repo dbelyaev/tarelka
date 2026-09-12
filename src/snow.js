@@ -7,7 +7,7 @@
  * visually indistinguishable from squares at that size.
  */
 import { CONFIG } from './config.js';
-import { isSnowSeason, debounce } from './utils.js';
+import { isSnowSeason, debounce, prefersCoarsePointer } from './utils.js';
 
 /** Layer distribution ratios: background, middle, foreground */
 const LAYER_DISTRIBUTION = [0.3, 0.4, 0.3];
@@ -124,8 +124,9 @@ export class SnowEffect {
      * Adds or removes flakes proportionally across layers.
      */
     _adjustFlakeCount(canvasWidth, canvasHeight) {
+        const densityScale = prefersCoarsePointer() ? CONFIG.performance.mobileParticleScale : 1;
         const targetTotal = Math.max(
-            Math.floor((canvasWidth * canvasHeight) / CONFIG.snow.flakesPerArea),
+            Math.floor((canvasWidth * canvasHeight * densityScale) / CONFIG.snow.flakesPerArea),
             MIN_SNOWFLAKES
         );
         const currentTotal = this.snowflakes.length;

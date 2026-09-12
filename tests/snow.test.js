@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { SnowEffect } from '../src/snow.js';
+import { CONFIG } from '../src/config.js';
 
 const FLAKES_PER_AREA = 8000;
 const MIN_SNOWFLAKES = 10;
@@ -110,5 +111,28 @@ describe('SnowEffect', () => {
         effect.cleanup();
 
         expect(document.querySelector('main').contains(effect.canvas)).toBe(false);
+    });
+
+    it('scales down flake density on coarse-pointer (mobile-class) devices', () => {
+        const baseline = new SnowEffect();
+        const baselineCount = baseline.snowflakes.length;
+        baseline.cleanup();
+
+        Object.defineProperty(window, 'matchMedia', {
+            configurable: true,
+            value: vi.fn(() => ({ matches: true }))
+        });
+
+        const mobile = new SnowEffect();
+        const expectedMobileCount = Math.max(
+            Math.floor((800 * 600 * CONFIG.performance.mobileParticleScale) / 8000),
+            MIN_SNOWFLAKES
+        );
+
+        expect(mobile.snowflakes).toHaveLength(expectedMobileCount);
+        expect(mobile.snowflakes.length).toBeLessThan(baselineCount);
+
+        mobile.cleanup();
+        delete window.matchMedia;
     });
 });

@@ -1,28 +1,29 @@
 /**
- * Rain effect — short, pixelated streaks falling at a fixed skew angle
+ * Rain effect — short, pixelated streaks falling at a skewed angle
  *
- * Unlike snow, rain uses a single skew angle chosen once per instance (not
- * per-drop) so every streak stays visually parallel, matching wind-driven
- * rain rather than scattered confetti. There are no parallax layers: a
- * streak's length + skew already reads as directional motion/depth on its
- * own, so the extra layering complexity snow needs for its drifting circles
- * isn't needed here.
+ * Each drop wobbles a few degrees around one shared base angle rolled once
+ * per instance, so the effect still reads as coherent wind-driven rain (not
+ * scattered confetti) while individual streaks aren't perfectly parallel.
+ * There are no parallax layers: a streak's length + skew already reads as
+ * directional motion/depth on its own, so the extra layering complexity
+ * snow needs for its drifting circles isn't needed here.
  *
  * Performance: opacity is quantized to 0.1 increments so drops share
  * strokeStyle values and can be batched — one stroke() call per opacity
  * group, mirroring snow's one-fill()-per-group approach.
  */
 import { CONFIG } from './config.js';
-import { debounce } from './utils.js';
+import { debounce, prefersCoarsePointer } from './utils.js';
 
 /** Minimum raindrop count so the effect stays visible on very small viewports */
 const MIN_RAINDROPS = 10;
 
 /**
- * Raindrop — a short line segment falling along a shared direction vector
+ * Raindrop — a short line segment falling along its own direction vector
  */
 class Raindrop {
-    constructor(canvasWidth, canvasHeight) {
+    constructor(canvasWidth, canvasHeight, baseAngleDeg) {
+        this.baseAngleDeg = baseAngleDeg;
         this.reset(canvasWidth, canvasHeight, true);
     }
 
@@ -35,11 +36,17 @@ class Raindrop {
         this.strokeStyle = `rgba(200, 215, 235, ${this.opacity})`;
         this.canvasWidth = canvasWidth;
         this.canvasHeight = canvasHeight;
+
+        // Wobble a few degrees around the shared base angle so drops aren't perfectly parallel
+        const jitterDeg = (Math.random() - 0.5) * 2 * CONFIG.rain.angleJitter;
+        const rad = (this.baseAngleDeg + jitterDeg) * Math.PI / 180;
+        this.dirX = Math.sin(rad);
+        this.dirY = Math.cos(rad);
     }
 
-    update(delta, dirX, dirY) {
-        this.x += dirX * this.speed * delta * 60;
-        this.y += dirY * this.speed * delta * 60;
+    update(delta) {
+        this.x += this.dirX * this.speed * delta * 60;
+        this.y += this.dirY * this.speed * delta * 60;
 
         // Reset if out of bounds (length is the margin, since a diagonal
         // streak needs more slack than a point before it visibly pops)
@@ -79,12 +86,10 @@ export class RainEffect {
 
         document.querySelector('main').appendChild(this.canvas);
 
-        // One skew angle for the whole instance, rolled once so every streak stays parallel
+        // One base skew angle for the whole instance ("wind direction"); each
+        // drop then wobbles a few degrees around it — see Raindrop.reset().
         const angleDeg = CONFIG.rain.angle.min + Math.random() * (CONFIG.rain.angle.max - CONFIG.rain.angle.min);
         this.angleDeg = angleDeg * (Math.random() < 0.5 ? 1 : -1);
-        const rad = this.angleDeg * Math.PI / 180;
-        this.dirX = Math.sin(rad);
-        this.dirY = Math.cos(rad);
 
         this.resize();
 
@@ -114,10 +119,13 @@ export class RainEffect {
 
     /**
      * Adjust raindrop count to match the target for the current viewport.
+     * Density is scaled down on coarse-pointer (mobile-class) devices to keep
+     * per-frame draw cost low on weaker hardware.
      */
     _adjustDropCount(canvasWidth, canvasHeight) {
+        const densityScale = prefersCoarsePointer() ? CONFIG.performance.mobileParticleScale : 1;
         const targetTotal = Math.max(
-            Math.floor((canvasWidth * canvasHeight) / CONFIG.rain.dropsPerArea),
+            Math.floor((canvasWidth * canvasHeight * densityScale) / CONFIG.rain.dropsPerArea),
             MIN_RAINDROPS
         );
         const currentTotal = this.raindrops.length;
@@ -125,7 +133,7 @@ export class RainEffect {
         if (targetTotal > currentTotal) {
             const toAdd = targetTotal - currentTotal;
             for (let i = 0; i < toAdd; i++) {
-                this.raindrops.push(new Raindrop(canvasWidth, canvasHeight));
+                this.raindrops.push(new Raindrop(canvasWidth, canvasHeight, this.angleDeg));
             }
         } else if (targetTotal < currentTotal) {
             this.raindrops.length = targetTotal;
@@ -135,7 +143,7 @@ export class RainEffect {
     update(delta) {
         if (!this.enabled) return;
 
-        this.raindrops.forEach(drop => drop.update(delta, this.dirX, this.dirY));
+        this.raindrops.forEach(drop => drop.update(delta));
     }
 
     /**
@@ -156,7 +164,7 @@ export class RainEffect {
                 groups.set(drop.strokeStyle, path);
             }
             path.moveTo(drop.x, drop.y);
-            path.lineTo(drop.x + this.dirX * drop.length, drop.y + this.dirY * drop.length);
+            path.lineTo(drop.x + drop.dirX * drop.length, drop.y + drop.dirY * drop.length);
         }
 
         ctx.lineWidth = CONFIG.rain.lineWidth;
