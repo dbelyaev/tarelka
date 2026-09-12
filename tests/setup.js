@@ -4,8 +4,16 @@
 // re-exporting jsdom's version (see vitest's populateGlobal/getWindowKeys).
 // Force the real jsdom implementation so source code using the bare
 // `localStorage` global (as it does in the browser) works under test.
+// jsdom's `window.localStorage` is itself a getter-only accessor (no setter),
+// so a plain assignment throws under strict-mode ESM (vitest 5 + jsdom 30);
+// redefine the global property instead of assigning to it.
 // Guarded because setup files also run for test files that opt into the `node`
 // environment, where no jsdom window exists.
 if (globalThis.jsdom) {
-    globalThis.localStorage = globalThis.jsdom.window.localStorage;
+    Object.defineProperty(globalThis, 'localStorage', {
+        configurable: true,
+        get() {
+            return globalThis.jsdom.window.localStorage;
+        }
+    });
 }
