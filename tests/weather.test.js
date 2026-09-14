@@ -8,6 +8,9 @@ function fakeWeather(label, enabled = false, hasExplicitPreference = false) {
         toggle: vi.fn(function () {
             this.enabled = !this.enabled;
             this.hasExplicitPreference = true;
+        }),
+        setEnabled: vi.fn(function (value) {
+            this.enabled = value;
         })
     };
     return { effect, label };
@@ -54,6 +57,19 @@ describe('createWeatherGroup', () => {
 
         expect(rain.effect.enabled).toBe(true);
         expect(snow.effect.enabled).toBe(false);
+    });
+
+    it('disables a construction-time conflict loser via setEnabled(), not toggle() — so it is never falsely marked as an explicit user choice', () => {
+        // Regression: using toggle() here would persist a fabricated "user explicitly
+        // turned this off" preference just because of automatic startup reconciliation,
+        // permanently corrupting hasExplicitPreference for an effect the user never touched.
+        const snow = fakeWeather('Snow', true, false);
+        const rain = fakeWeather('Rain', true, true);
+        createWeatherGroup([snow, rain]);
+
+        expect(snow.effect.toggle).not.toHaveBeenCalled();
+        expect(snow.effect.setEnabled).toHaveBeenCalledWith(false);
+        expect(snow.effect.hasExplicitPreference).toBe(false);
     });
 
     it('leaves a working effect on when the target failed to construct (no-op toggle stub)', () => {

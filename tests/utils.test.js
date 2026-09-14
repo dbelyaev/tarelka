@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { checkWebGLSupport, debounce, isSnowSeason, disposeMaterial, prefersCoarsePointer } from '../src/utils.js';
+import { checkWebGLSupport, debounce, isSnowSeason, disposeMaterial, prefersCoarsePointer, pickWeightedIndex } from '../src/utils.js';
 
 describe('checkWebGLSupport', () => {
     it('returns false when the canvas cannot produce a WebGL context', () => {
@@ -105,6 +105,32 @@ describe('prefersCoarsePointer', () => {
             value: vi.fn(() => ({ matches: false }))
         });
         expect(prefersCoarsePointer()).toBe(false);
+    });
+});
+
+describe('pickWeightedIndex', () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it('picks index 0 for a low random value', () => {
+        vi.spyOn(Math, 'random').mockReturnValue(0.1);
+        expect(pickWeightedIndex([0.3, 0.4, 0.3])).toBe(0);
+    });
+
+    it('picks the middle index for a value in its range', () => {
+        vi.spyOn(Math, 'random').mockReturnValue(0.5);
+        expect(pickWeightedIndex([0.3, 0.4, 0.3])).toBe(1);
+    });
+
+    it('picks the last index for a high random value', () => {
+        vi.spyOn(Math, 'random').mockReturnValue(0.95);
+        expect(pickWeightedIndex([0.3, 0.4, 0.3])).toBe(2);
+    });
+
+    it('never returns an out-of-range index even if the distribution sums below 1', () => {
+        vi.spyOn(Math, 'random').mockReturnValue(0.999);
+        expect(pickWeightedIndex([0.3, 0.3])).toBe(1);
     });
 });
 

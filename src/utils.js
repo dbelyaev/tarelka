@@ -65,6 +65,23 @@ export function randomSign() {
 }
 
 /**
+ * Weighted random index selection over cumulative distribution ratios (e.g.
+ * a parallax LAYER_DISTRIBUTION like [0.3, 0.4, 0.3]). Same non-cryptographic-
+ * use note as randomInRange — only used to pick a particle's visual layer.
+ * @param {number[]} distribution - ratios that should sum to ~1
+ * @returns {number} index into distribution
+ */
+export function pickWeightedIndex(distribution) {
+    const r = Math.random(); // NOSONAR - decorative randomness, not security-sensitive
+    let cumulative = 0;
+    for (let i = 0; i < distribution.length; i++) {
+        cumulative += distribution[i];
+        if (r < cumulative) return i;
+    }
+    return distribution.length - 1;
+}
+
+/**
  * Check if the current month falls within the configured winter months
  * @param {number[]} winterMonths - Array of month numbers (1-12)
  * @returns {boolean} True if current month is in the winter months array

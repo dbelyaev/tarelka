@@ -56,8 +56,10 @@ function initializeApp() {
             update: () => {},
             draw: () => {},
             toggle: () => {},
+            setEnabled: () => {},
             cleanup: () => {},
-            enabled: false
+            enabled: false,
+            hasExplicitPreference: false
         };
     }
 
@@ -71,8 +73,10 @@ function initializeApp() {
             update: () => {},
             draw: () => {},
             toggle: () => {},
+            setEnabled: () => {},
             cleanup: () => {},
-            enabled: false
+            enabled: false,
+            hasExplicitPreference: false
         };
     }
 
@@ -86,8 +90,10 @@ function initializeApp() {
             update: () => {},
             draw: () => {},
             toggle: () => {},
+            setEnabled: () => {},
             cleanup: () => {},
-            enabled: false
+            enabled: false,
+            hasExplicitPreference: false
         };
     }
 
@@ -101,8 +107,10 @@ function initializeApp() {
             update: () => {},
             draw: () => {},
             toggle: () => {},
+            setEnabled: () => {},
             cleanup: () => {},
-            enabled: false
+            enabled: false,
+            hasExplicitPreference: false
         };
     }
 
@@ -360,45 +368,55 @@ function initializeApp() {
         }
     }
 
-    // Keyboard toggle for PS1 style, snow effect, and debug mode
-    const keydownHandler = (e) => {
-        if (e.key === 'p' || e.key === 'P') {
-            // Write the toggled value to localStorage but don't mutate CONFIG
-            // in memory — prevents jitter starting/stopping before the reload.
-            const newPs1Style = !CONFIG.ps1Style;
-            localStorage.setItem('ps1Style', String(newPs1Style));
-            showNotification(`PS1 Style: ${newPs1Style ? 'ON' : 'OFF'} (reloading...)`, 0);
-            setTimeout(() => location.reload(), 800);
+    function togglePs1Style() {
+        // Write the toggled value to localStorage but don't mutate CONFIG
+        // in memory — prevents jitter starting/stopping before the reload.
+        const newPs1Style = !CONFIG.ps1Style;
+        localStorage.setItem('ps1Style', String(newPs1Style));
+        showNotification(`PS1 Style: ${newPs1Style ? 'ON' : 'OFF'} (reloading...)`, 0);
+        setTimeout(() => location.reload(), 800);
+    }
+
+    function toggleDebugMode() {
+        CONFIG.debug = !CONFIG.debug;
+        if (CONFIG.debug) {
+            startDebugMonitoring();
+        } else {
+            stopDebugMonitoring();
         }
-        
-        if (e.key === 's' || e.key === 'S') {
+        showNotification(`Debug Mode: ${CONFIG.debug ? 'ON' : 'OFF'}`);
+    }
+
+    // One handler per weather key, keyed by lowercased e.key, so keydownHandler
+    // itself stays a flat dispatch instead of a long if/||-chain.
+    const weatherKeyHandlers = {
+        s: () => {
             weatherGroup.toggle(snowWeather);
             showNotification(`Snow Effect: ${snowEffect.enabled ? 'ON' : 'OFF'}`);
-        }
-
-        if (e.key === 'r' || e.key === 'R') {
+        },
+        r: () => {
             weatherGroup.toggle(rainWeather);
             showNotification(`Rain Effect: ${rainEffect.enabled ? 'ON' : 'OFF'}`);
-        }
-
-        if (e.key === 'w' || e.key === 'W') {
+        },
+        w: () => {
             weatherGroup.toggle(windWeather);
             showNotification(`Wind Effect: ${windEffect.enabled ? 'ON' : 'OFF'}`);
-        }
-
-        if (e.key === 'l' || e.key === 'L') {
+        },
+        l: () => {
             weatherGroup.toggle(sleetWeather);
             showNotification(`Sleet Effect: ${sleetEffect.enabled ? 'ON' : 'OFF'}`);
         }
+    };
 
-        if (e.key === 'd' || e.key === 'D') {
-            CONFIG.debug = !CONFIG.debug;
-            if (CONFIG.debug) {
-                startDebugMonitoring();
-            } else {
-                stopDebugMonitoring();
-            }
-            showNotification(`Debug Mode: ${CONFIG.debug ? 'ON' : 'OFF'}`);
+    // Keyboard toggle for PS1 style, weather effects, and debug mode
+    const keydownHandler = (e) => {
+        const key = e.key.toLowerCase();
+        if (key === 'p') {
+            togglePs1Style();
+        } else if (key === 'd') {
+            toggleDebugMode();
+        } else if (weatherKeyHandlers[key]) {
+            weatherKeyHandlers[key]();
         }
     };
     document.addEventListener('keydown', keydownHandler);

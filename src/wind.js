@@ -15,7 +15,7 @@
  * group, mirroring rain's approach.
  */
 import { CONFIG } from './config.js';
-import { prefersCoarsePointer, randomInRange, randomSign } from './utils.js';
+import { prefersCoarsePointer, randomInRange, randomSign, pickWeightedIndex } from './utils.js';
 import { CanvasEffect } from './canvas-effect.js';
 
 /** Layer distribution ratios: background, middle, foreground */
@@ -55,9 +55,11 @@ class WindStreak {
         // No gravity axis — spawn at the trailing edge in the direction of travel,
         // at a random height across the full viewport.
         this.y = randomInRange(0, canvasHeight);
-        this.x = initial
-            ? randomInRange(0, canvasWidth)
-            : (this.baseDirSign > 0 ? -this.length : canvasWidth + this.length);
+        if (initial) {
+            this.x = randomInRange(0, canvasWidth);
+        } else {
+            this.x = this.baseDirSign > 0 ? -this.length : canvasWidth + this.length;
+        }
     }
 
     update(delta) {
@@ -171,10 +173,7 @@ export class WindEffect extends CanvasEffect {
      * based on LAYER_DISTRIBUTION ratios.
      */
     _pickLayer() {
-        const r = Math.random();
-        if (r < LAYER_DISTRIBUTION[0]) return 0;
-        if (r < LAYER_DISTRIBUTION[0] + LAYER_DISTRIBUTION[1]) return 1;
-        return 2;
+        return pickWeightedIndex(LAYER_DISTRIBUTION);
     }
 
     update(delta) {

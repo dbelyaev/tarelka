@@ -11,6 +11,7 @@
 import { CONFIG } from './config.js';
 
 const CACHE_KEY = 'liveWeatherCache';
+const VALID_EFFECTS = new Set(['none', 'rain', 'snow', 'sleet', 'wind']);
 
 /**
  * Map a WMO weather code + wind speed (km/h) to an effect name.
@@ -52,7 +53,7 @@ function readCache() {
         const raw = localStorage.getItem(CACHE_KEY);
         if (!raw) return null;
         const { effect, fetchedAt } = JSON.parse(raw);
-        if (typeof effect !== 'string' || typeof fetchedAt !== 'number') return null;
+        if (!VALID_EFFECTS.has(effect) || typeof fetchedAt !== 'number') return null;
         if (Date.now() - fetchedAt >= CONFIG.liveWeather.cacheTtlMs) return null;
         return effect;
     } catch {
@@ -95,7 +96,7 @@ export async function fetchLiveWeatherEffect({ timeoutMs = CONFIG.liveWeather.fe
         const data = await response.json();
         const { weathercode, windspeed } = data.current_weather ?? {};
         if (typeof weathercode !== 'number' || typeof windspeed !== 'number') {
-            throw new Error('Open-Meteo response missing current_weather fields');
+            throw new TypeError('Open-Meteo response missing current_weather fields');
         }
 
         const effect = mapWeatherToEffect(weathercode, windspeed);
@@ -145,15 +146,15 @@ export function applyLiveWeatherDefault(weathers, liveEffectName) {
 
     const match = weathers.find(w => w.name === liveEffectName);
 
-    const conflictingExplicitlyOn = weathers.find(
+    const hasConflictingExplicitlyOn = weathers.some(
         w => w !== match && w.effect.enabled && w.effect.hasExplicitPreference
     );
-    if (conflictingExplicitlyOn) {
+    if (hasConflictingExplicitlyOn) {
         console.log('[weather] Skipping — an explicitly-enabled effect takes precedence');
         return;
     }
 
-    if (match && match.effect.hasExplicitPreference && !match.effect.enabled) {
+    if (match?.effect.hasExplicitPreference && !match.effect.enabled) {
         console.log('[weather] Skipping — the matching effect was explicitly turned off');
         return;
     }

@@ -7,7 +7,7 @@
  * visually indistinguishable from squares at that size.
  */
 import { CONFIG } from './config.js';
-import { isSnowSeason, prefersCoarsePointer } from './utils.js';
+import { isSnowSeason, prefersCoarsePointer, pickWeightedIndex } from './utils.js';
 import { CanvasEffect } from './canvas-effect.js';
 
 /** Layer distribution ratios: background, middle, foreground */
@@ -169,10 +169,7 @@ export class SnowEffect extends CanvasEffect {
      * based on LAYER_DISTRIBUTION ratios.
      */
     _pickLayer() {
-        const r = Math.random();
-        if (r < LAYER_DISTRIBUTION[0]) return 0;
-        if (r < LAYER_DISTRIBUTION[0] + LAYER_DISTRIBUTION[1]) return 1;
-        return 2;
+        return pickWeightedIndex(LAYER_DISTRIBUTION);
     }
     
     update(delta) {
