@@ -113,6 +113,18 @@ describe('SnowEffect', () => {
         effect.cleanup();
     });
 
+    it('setEnabled() flips enabled state without persisting it or marking the preference explicit (used by live-weather auto-selection)', () => {
+        const effect = new SnowEffect();
+        const initial = effect.enabled;
+
+        effect.setEnabled(!initial);
+
+        expect(effect.enabled).toBe(!initial);
+        expect(localStorage.getItem('snowEnabled')).toBeNull();
+        expect(effect.hasExplicitPreference).toBe(false);
+        effect.cleanup();
+    });
+
     it('cleanup() removes the canvas from the DOM', () => {
         const effect = new SnowEffect();
         expect(document.querySelector('main').contains(effect.canvas)).toBe(true);

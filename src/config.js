@@ -47,8 +47,34 @@ export const CONFIG = {
         lineWidth: 2,
         opacity: { min: 0.4, max: 0.8 } // Quantized to 0.1 for batched stroke() calls
     },
+    wind: {
+        streaksPerArea: 15000, // Viewport area (px²) per streak — sparser than rain since streaks are long & thin
+        length: { min: 20, max: 50 },
+        speed: { min: 4, max: 12 },
+        angle: { min: 0, max: 10 }, // Degrees off horizontal; one base value rolled per WindEffect instance
+        angleJitter: 8,
+        lineWidth: 1,
+        opacity: { min: 0.15, max: 0.4 } // Deliberately faint — wind is implied motion, not a solid mass
+    },
+    sleet: {
+        dropsPerArea: 10000, // Between snow's 8000 and rain's 12000
+        length: { min: 6, max: 12 }, // Shorter than rain's streaks
+        speed: { min: 3, max: 8 }, // Between snow's drift and rain's fall speed
+        angle: { min: 8, max: 18 }, // Steeper (more vertical) than rain's 30-45
+        angleJitter: 4,
+        drift: { min: -0.3, max: 0.3 }, // Independent horizontal wobble applied each frame, snow-style
+        lineWidth: 1.5,
+        opacity: { min: 0.3, max: 0.6 }
+    },
+    liveWeather: {
+        latitude: 58.97, // Stavanger, Norway
+        longitude: 5.73,
+        cacheTtlMs: 15 * 60 * 1000, // Avoid hammering the free API on every reload
+        fetchTimeoutMs: 3000,
+        windSpeedThresholdKmh: 30 // ~Beaufort 5 "fresh breeze" — judgment call
+    },
     performance: {
-        mobileParticleScale: 0.6 // Density multiplier for snow/rain particle counts on coarse-pointer (mobile-class) devices
+        mobileParticleScale: 0.6 // Density multiplier for snow/rain/wind/sleet particle counts on coarse-pointer (mobile-class) devices
     },
     resize: {
         debounceMs: 100

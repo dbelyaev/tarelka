@@ -1,8 +1,8 @@
 /**
  * Coordinates a set of mutually-exclusive weather effects (snow, rain, ...).
  * Each entry is { effect, label } where `effect` exposes `.enabled`, `.toggle()`,
- * and `.hasExplicitPreference` (true if `.enabled` reflects a stored user choice
- * rather than a fallback default, e.g. snow's seasonal default).
+ * `.setEnabled(boolean)`, and `.hasExplicitPreference` (true if `.enabled` reflects
+ * a stored user choice rather than a fallback default, e.g. snow's seasonal default).
  */
 export function createWeatherGroup(weathers) {
     // Enforce the invariant at construction time too, in case stale localStorage
@@ -11,10 +11,16 @@ export function createWeatherGroup(weathers) {
     // by default, so a real persisted preference is never silently overwritten by
     // an arbitrary tie-break (e.g. rain explicitly enabled by the user, but snow also
     // on by seasonal default — snow must lose that tie, not win it by array order).
+    //
+    // The loser is disabled via setEnabled(), not toggle(): this reconciliation is
+    // automatic startup cleanup, not a real user action, so it must not persist to
+    // localStorage or mark hasExplicitPreference — doing so would permanently and
+    // falsely record e.g. "user explicitly turned snow off" just because snow's
+    // seasonal default happened to conflict with another effect at load time.
     const alreadyEnabled = weathers.filter(w => w.effect.enabled);
     if (alreadyEnabled.length > 1) {
         const winner = alreadyEnabled.find(w => w.effect.hasExplicitPreference) ?? alreadyEnabled[0];
-        alreadyEnabled.filter(w => w !== winner).forEach(w => w.effect.toggle());
+        alreadyEnabled.filter(w => w !== winner).forEach(w => w.effect.setEnabled(false));
     }
 
     return {
