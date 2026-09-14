@@ -26,8 +26,11 @@ tarelka/
 │   ├── controls.js     # Mouse and touch interaction
 │   ├── snow.js         # Snow effect with parallax layers
 │   ├── rain.js         # Rain effect with skewed pixelated streaks
+│   ├── wind.js         # Wind effect with drifting parallax streaks
+│   ├── sleet.js        # Sleet effect (rain/snow mix)
 │   ├── weather.js      # Coordinates mutually-exclusive weather effects
-│   ├── canvas-effect.js # Shared canvas overlay lifecycle for snow/rain
+│   ├── canvas-effect.js # Shared canvas overlay lifecycle for weather effects
+│   ├── live-weather.js # Live Stavanger weather fetch + effect auto-selection
 │   └── utils.js        # Utility functions
 ├── assets/
 │   ├── models/         # 3D models
@@ -47,8 +50,11 @@ tarelka/
 - **`src/controls.js`** - Mouse and touch events, rotation with inertia, drag-to-rotate
 - **`src/snow.js`** - Animated snow effect with 3 parallax layers for depth
 - **`src/rain.js`** - Animated rain effect with short, skewed, pixelated streaks
-- **`src/weather.js`** - Coordinates mutually-exclusive weather effects (snow, rain)
-- **`src/canvas-effect.js`** - Shared canvas create/resize/toggle/cleanup lifecycle used by snow and rain
+- **`src/wind.js`** - Animated wind effect with faint, near-horizontal drifting streaks
+- **`src/sleet.js`** - Animated sleet effect combining rain's fall angle with snow's horizontal drift
+- **`src/weather.js`** - Coordinates mutually-exclusive weather effects (snow, rain, wind, sleet)
+- **`src/canvas-effect.js`** - Shared canvas create/resize/toggle/cleanup lifecycle used by all weather effects
+- **`src/live-weather.js`** - Fetches current Stavanger weather (Open-Meteo) and auto-selects the matching effect
 - **`src/utils.js`** - WebGL support check, debounce function, material disposal
 
 ## Features
@@ -57,17 +63,22 @@ tarelka/
 - **PS1 Graphics Mode** - Retro PlayStation 1 style rendering (press **P** to toggle)
 - **Snow Effect** - Falling snowflakes with parallax layers (press **S** to toggle)
 - **Rain Effect** - Falling rain at a skewed angle (press **R** to toggle)
+- **Wind Effect** - Faint drifting streaks with parallax layers (press **W** to toggle)
+- **Sleet Effect** - Falling rain/snow mix with horizontal drift (press **L** to toggle)
+- **Live Weather** - Auto-selects the matching effect from Stavanger's current conditions on load, unless you've made an explicit choice
 - **Touch Support** - Full mobile and tablet support
 - **Responsive Design** - Adapts to any screen size
 - **WebGL Optimization** - Pauses rendering when tab is inactive
 
-Snow and rain are mutually exclusive — enabling one turns off the other.
+Snow, rain, wind, and sleet are mutually exclusive — enabling one turns off the others.
 
 ## Keyboard Controls
 
 - **P** - Toggle PS1 graphics style (requires page reload)
-- **S** - Toggle snow effect on/off (disables rain if active)
-- **R** - Toggle rain effect on/off (disables snow if active)
+- **S** - Toggle snow effect on/off (disables the others if active)
+- **R** - Toggle rain effect on/off (disables the others if active)
+- **W** - Toggle wind effect on/off (disables the others if active)
+- **L** - Toggle sleet effect on/off (disables the others if active)
 - **D** - Toggle debug mode (shows renderer statistics in console)
 
 ## Development

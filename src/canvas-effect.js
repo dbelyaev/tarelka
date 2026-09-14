@@ -51,6 +51,23 @@ export class CanvasEffect {
         }
     }
 
+    /**
+     * Set enabled state programmatically (e.g. live-weather auto-selection)
+     * WITHOUT recording it as a user preference: unlike toggle(), this does
+     * not touch hasExplicitPreference or localStorage. An automated decision
+     * must stay re-adjustable on every future call — persisting it would make
+     * the constructor's `hasExplicitPreference = stored !== null` check treat
+     * it as a real user choice on the next page load, permanently blocking
+     * further automated changes.
+     */
+    setEnabled(enabled) {
+        if (this.enabled === enabled) return;
+        this.enabled = enabled;
+        if (!this.enabled) {
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        }
+    }
+
     cleanup() {
         this.resizeHandler.cancel();
         window.removeEventListener('resize', this.resizeHandler);
