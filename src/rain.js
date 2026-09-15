@@ -71,7 +71,6 @@ export class RainEffect extends CanvasEffect {
     constructor() {
         super({
             className: 'rain-canvas',
-            ps1ClassName: 'rain-canvas--ps1',
             storageKey: 'rainEnabled',
             // No seasonal default (unlike snow) — rain has no natural "season" signal
             resolveDefaultEnabled: () => false

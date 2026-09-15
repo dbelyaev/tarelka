@@ -8,11 +8,8 @@ import { createScene, createBackgroundScene, setupLighting, createCamera } from 
 import { createRenderer, setupContextHandlers, onWindowResize, logRendererInfo } from './renderer.js';
 import { loadModel } from './loader.js';
 import { initializeControls, updateRotation } from './controls.js';
-import { SnowEffect } from './snow.js';
-import { RainEffect } from './rain.js';
-import { WindEffect } from './wind.js';
-import { SleetEffect } from './sleet.js';
-import { createWeatherGroup } from './weather.js';
+import { WEATHER_DEFINITIONS } from './weather-registry.js';
+import { createWeatherGroup, instantiateWeathers } from './weather.js';
 import { fetchLiveWeatherEffect, applyLiveWeatherDefault } from './live-weather.js';
 
 // Wait for DOM to be fully loaded
@@ -46,80 +43,8 @@ function initializeApp() {
     mainEl.appendChild(renderer.domElement);
     renderer.domElement.setAttribute('aria-hidden', 'true');
 
-    // Initialize snow effect
-    let snowEffect;
-    try {
-        snowEffect = new SnowEffect();
-    } catch (error) {
-        console.error('Failed to initialize snow effect:', error);
-        snowEffect = {
-            update: () => {},
-            draw: () => {},
-            toggle: () => {},
-            setEnabled: () => {},
-            cleanup: () => {},
-            enabled: false,
-            hasExplicitPreference: false
-        };
-    }
-
-    // Initialize rain effect
-    let rainEffect;
-    try {
-        rainEffect = new RainEffect();
-    } catch (error) {
-        console.error('Failed to initialize rain effect:', error);
-        rainEffect = {
-            update: () => {},
-            draw: () => {},
-            toggle: () => {},
-            setEnabled: () => {},
-            cleanup: () => {},
-            enabled: false,
-            hasExplicitPreference: false
-        };
-    }
-
-    // Initialize wind effect
-    let windEffect;
-    try {
-        windEffect = new WindEffect();
-    } catch (error) {
-        console.error('Failed to initialize wind effect:', error);
-        windEffect = {
-            update: () => {},
-            draw: () => {},
-            toggle: () => {},
-            setEnabled: () => {},
-            cleanup: () => {},
-            enabled: false,
-            hasExplicitPreference: false
-        };
-    }
-
-    // Initialize sleet effect
-    let sleetEffect;
-    try {
-        sleetEffect = new SleetEffect();
-    } catch (error) {
-        console.error('Failed to initialize sleet effect:', error);
-        sleetEffect = {
-            update: () => {},
-            draw: () => {},
-            toggle: () => {},
-            setEnabled: () => {},
-            cleanup: () => {},
-            enabled: false,
-            hasExplicitPreference: false
-        };
-    }
-
-    // Snow, rain, wind, and sleet are mutually exclusive — enabling one disables the others
-    const snowWeather = { effect: snowEffect, label: 'Snow', name: 'snow' };
-    const rainWeather = { effect: rainEffect, label: 'Rain', name: 'rain' };
-    const windWeather = { effect: windEffect, label: 'Wind', name: 'wind' };
-    const sleetWeather = { effect: sleetEffect, label: 'Sleet', name: 'sleet' };
-    const weathers = [snowWeather, rainWeather, windWeather, sleetWeather];
+    // Weather effects are mutually exclusive — enabling one disables the others
+    const weathers = instantiateWeathers(WEATHER_DEFINITIONS);
     const weatherGroup = createWeatherGroup(weathers);
 
     // Auto-select the effect matching Stavanger's current live weather, unless
@@ -203,17 +128,7 @@ function initializeApp() {
             }
         }
         
-        // Update snow effect
-        snowEffect.update(delta);
-
-        // Update rain effect
-        rainEffect.update(delta);
-
-        // Update wind effect
-        windEffect.update(delta);
-
-        // Update sleet effect
-        sleetEffect.update(delta);
+        weathers.forEach(w => w.effect.update(delta));
 
         // Clear and render
         renderer.clear();
@@ -239,17 +154,8 @@ function initializeApp() {
             console.error('Render error:', renderError);
         }
         
-        // Draw snow effect on top
-        snowEffect.draw();
-
-        // Draw rain effect on top
-        rainEffect.draw();
-
-        // Draw wind effect on top
-        windEffect.draw();
-
-        // Draw sleet effect on top
-        sleetEffect.draw();
+        // Draw weather overlays on top
+        weathers.forEach(w => w.effect.draw());
     }
 
     /**
@@ -305,17 +211,7 @@ function initializeApp() {
         // Remove controls event listeners
         cleanupControls();
         
-        // Cleanup snow effect
-        snowEffect.cleanup();
-
-        // Cleanup rain effect
-        rainEffect.cleanup();
-
-        // Cleanup wind effect
-        windEffect.cleanup();
-
-        // Cleanup sleet effect
-        sleetEffect.cleanup();
+        weathers.forEach(w => w.effect.cleanup());
 
         // Stop debug monitoring
         stopDebugMonitoring();
@@ -387,36 +283,23 @@ function initializeApp() {
         showNotification(`Debug Mode: ${CONFIG.debug ? 'ON' : 'OFF'}`);
     }
 
-    // One handler per weather key, keyed by lowercased e.key, so keydownHandler
-    // itself stays a flat dispatch instead of a long if/||-chain.
-    const weatherKeyHandlers = {
-        s: () => {
-            weatherGroup.toggle(snowWeather);
-            showNotification(`Snow Effect: ${snowEffect.enabled ? 'ON' : 'OFF'}`);
-        },
-        r: () => {
-            weatherGroup.toggle(rainWeather);
-            showNotification(`Rain Effect: ${rainEffect.enabled ? 'ON' : 'OFF'}`);
-        },
-        w: () => {
-            weatherGroup.toggle(windWeather);
-            showNotification(`Wind Effect: ${windEffect.enabled ? 'ON' : 'OFF'}`);
-        },
-        l: () => {
-            weatherGroup.toggle(sleetWeather);
-            showNotification(`Sleet Effect: ${sleetEffect.enabled ? 'ON' : 'OFF'}`);
-        }
-    };
+    const weatherByKey = new Map(weathers.map(w => [w.key, w]));
 
     // Keyboard toggle for PS1 style, weather effects, and debug mode
     const keydownHandler = (e) => {
+        // Leave browser shortcuts (Ctrl+F, Cmd+R, Cmd+P, ...) alone, and don't
+        // re-toggle on auto-repeat while a key is held down.
+        if (e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
+
         const key = e.key.toLowerCase();
         if (key === 'p') {
             togglePs1Style();
         } else if (key === 'd') {
             toggleDebugMode();
-        } else if (weatherKeyHandlers[key]) {
-            weatherKeyHandlers[key]();
+        } else if (weatherByKey.has(key)) {
+            const weather = weatherByKey.get(key);
+            weatherGroup.toggle(weather);
+            showNotification(`${weather.label} Effect: ${weather.effect.enabled ? 'ON' : 'OFF'}`);
         }
     };
     document.addEventListener('keydown', keydownHandler);

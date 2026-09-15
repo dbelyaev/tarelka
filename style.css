@@ -229,61 +229,19 @@ canvas {
     z-index: 1002;
 }
 
-.snow-canvas {
+.weather-layer {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     pointer-events: none;
-    z-index: 1000;
+    z-index: 1000; /* weather effects are mutually exclusive, so layers never compete for order */
 }
 
-/* Display size is set inline by SnowEffect.resize(); only the upscaling
+/* Canvas display size is set inline by CanvasEffect.resize(); only the upscaling
    filter is styled here, so the low-res buffer stays crisp instead of blurred. */
-.snow-canvas--ps1 {
-    image-rendering: pixelated;
-}
-
-.rain-canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 1000; /* snow and rain are never both visible (mutually exclusive), so no ordering conflict */
-}
-
-.rain-canvas--ps1 {
-    image-rendering: pixelated;
-}
-
-.wind-canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 1000; /* snow/rain/wind/sleet are mutually exclusive, so no ordering conflict */
-}
-
-.wind-canvas--ps1 {
-    image-rendering: pixelated;
-}
-
-.sleet-canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 1000;
-}
-
-.sleet-canvas--ps1 {
+.weather-layer--ps1 {
     image-rendering: pixelated;
 }
 

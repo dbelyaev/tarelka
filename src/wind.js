@@ -89,7 +89,6 @@ export class WindEffect extends CanvasEffect {
     constructor() {
         super({
             className: 'wind-canvas',
-            ps1ClassName: 'wind-canvas--ps1',
             storageKey: 'windEnabled',
             // No seasonal default (like rain) — wind has no natural "season" signal
             resolveDefaultEnabled: () => false
