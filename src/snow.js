@@ -74,10 +74,6 @@ export class SnowEffect extends CanvasEffect {
     constructor() {
         super({
             className: 'snow-canvas',
-            // PS1 mode: draw at a fraction of viewport resolution and let the CSS
-            // upscale with nearest-neighbor filtering, matching the WebGL renderer's
-            // pixelation (see renderer.js computeRenderSize).
-            ps1ClassName: 'snow-canvas--ps1',
             storageKey: 'snowEnabled',
             // Respect user preference, fall back to the seasonal default
             resolveDefaultEnabled: () => isSnowSeason(CONFIG.snow.winterMonths)

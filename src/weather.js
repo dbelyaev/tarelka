@@ -1,4 +1,39 @@
 /**
+ * No-op stand-in with the full WeatherEffect shape, used when an effect fails
+ * to construct so the rest of the app can keep calling it unconditionally.
+ */
+export function createNoopEffect() {
+    return {
+        update: () => {},
+        draw: () => {},
+        toggle: () => {},
+        setEnabled: () => {},
+        cleanup: () => {},
+        enabled: false,
+        hasExplicitPreference: false
+    };
+}
+
+/**
+ * Construct each weather definition's effect. A definition whose create()
+ * throws is logged and replaced with a no-op effect instead of aborting startup.
+ * @param {{name: string, label: string, key: string, create: () => object}[]} definitions
+ * @returns {{effect: object, name: string, label: string, key: string}[]}
+ */
+export function instantiateWeathers(definitions) {
+    return definitions.map(({ name, label, key, create }) => {
+        let effect;
+        try {
+            effect = create();
+        } catch (error) {
+            console.error(`Failed to initialize ${label} effect:`, error);
+            effect = createNoopEffect();
+        }
+        return { effect, name, label, key };
+    });
+}
+
+/**
  * Coordinates a set of mutually-exclusive weather effects (snow, rain, ...).
  * Each entry is { effect, label } where `effect` exposes `.enabled`, `.toggle()`,
  * `.setEnabled(boolean)`, and `.hasExplicitPreference` (true if `.enabled` reflects
@@ -27,7 +62,7 @@ export function createWeatherGroup(weathers) {
         toggle(target) {
             // Toggle the target first and only disable its peers on a confirmed
             // false-to-true transition. A failed effect construction falls back to a
-            // no-op stub (see main.js) whose toggle() never flips .enabled — disabling
+            // no-op stub (see createNoopEffect) whose toggle() never flips .enabled — disabling
             // peers unconditionally would turn off a working effect while the broken
             // one silently stays off.
             const wasEnabled = target.effect.enabled;

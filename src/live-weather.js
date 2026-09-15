@@ -11,14 +11,14 @@
 import { CONFIG } from './config.js';
 
 const CACHE_KEY = 'liveWeatherCache';
-const VALID_EFFECTS = new Set(['none', 'rain', 'snow', 'sleet', 'wind']);
+export const VALID_EFFECTS = new Set(['none', 'rain', 'snow', 'sleet', 'wind', 'fog', 'thunderstorm']);
 
 /**
  * Map a WMO weather code + wind speed (km/h) to an effect name.
- * Precipitation codes always win over the wind-speed promotion below.
+ * Precipitation and fog codes always win over the wind-speed promotion below.
  * @param {number} weatherCode
  * @param {number} windSpeedKmh
- * @returns {'none'|'rain'|'snow'|'sleet'|'wind'}
+ * @returns {'none'|'rain'|'snow'|'sleet'|'wind'|'fog'|'thunderstorm'}
  */
 export function mapWeatherToEffect(weatherCode, windSpeedKmh) {
     let candidate;
@@ -26,8 +26,13 @@ export function mapWeatherToEffect(weatherCode, windSpeedKmh) {
         case 51: case 53: case 55: // drizzle
         case 61: case 63: case 65: // rain
         case 80: case 81: case 82: // rain showers
-        case 95: case 96: case 99: // thunderstorm (approximated to rain — no dedicated effect yet)
             candidate = 'rain';
+            break;
+        case 95: case 96: case 99: // thunderstorm (with or without hail)
+            candidate = 'thunderstorm';
+            break;
+        case 45: case 48: // fog / depositing rime fog
+            candidate = 'fog';
             break;
         case 56: case 57: // freezing drizzle
         case 66: case 67: // freezing rain
@@ -37,7 +42,10 @@ export function mapWeatherToEffect(weatherCode, windSpeedKmh) {
         case 85: case 86: // snow showers
             candidate = 'snow';
             break;
-        default: // clear, cloudy, fog, or unrecognized — fog has no dedicated effect yet
+        // Clear, cloudy, or unrecognized. Overcast (3) deliberately stays 'none'
+        // rather than 'fog': Stavanger is overcast most days, so mapping it would
+        // make fog the near-permanent default.
+        default:
             candidate = 'none';
     }
 
@@ -72,7 +80,7 @@ function writeCache(effect) {
 /**
  * Fetch current Stavanger weather and resolve it to an effect name.
  * @param {{ timeoutMs?: number }} [options]
- * @returns {Promise<'none'|'rain'|'snow'|'sleet'|'wind'|null>} null on any failure/timeout
+ * @returns {Promise<'none'|'rain'|'snow'|'sleet'|'wind'|'fog'|'thunderstorm'|null>} null on any failure/timeout
  */
 export async function fetchLiveWeatherEffect({ timeoutMs = CONFIG.liveWeather.fetchTimeoutMs } = {}) {
     const cached = readCache();
@@ -136,7 +144,7 @@ export async function fetchLiveWeatherEffect({ timeoutMs = CONFIG.liveWeather.fe
  *    effect that does NOT have an explicit preference.
  *
  * @param {{effect: object, name: string}[]} weathers
- * @param {'none'|'rain'|'snow'|'sleet'|'wind'|null} liveEffectName
+ * @param {'none'|'rain'|'snow'|'sleet'|'wind'|'fog'|'thunderstorm'|null} liveEffectName
  */
 export function applyLiveWeatherDefault(weathers, liveEffectName) {
     if (liveEffectName === null) {

@@ -229,62 +229,79 @@ canvas {
     z-index: 1002;
 }
 
-.snow-canvas {
+.weather-layer {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     pointer-events: none;
-    z-index: 1000;
+    z-index: 1000; /* weather effects are mutually exclusive, so layers never compete for order */
 }
 
-/* Display size is set inline by SnowEffect.resize(); only the upscaling
+/* Canvas display size is set inline by CanvasEffect.resize(); only the upscaling
    filter is styled here, so the low-res buffer stays crisp instead of blurred. */
-.snow-canvas--ps1 {
+.weather-layer--ps1 {
     image-rendering: pixelated;
 }
 
-.rain-canvas {
-    position: fixed;
+/* Fog: hidden layers stay in the DOM but invisible; visibility flips only after
+   the opacity fade-out finishes, so toggling off still fades. */
+.fog-layer {
+    overflow: hidden;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 1.5s ease, visibility 0s linear 1.5s;
+}
+
+.fog-layer--visible {
+    opacity: 1;
+    visibility: visible;
+    transition-delay: 0s;
+}
+
+/* Twice the viewport width so the drift never exposes an edge. Only transform
+   is animated, which composites without repainting the gradients each frame. */
+.fog-layer::before {
+    content: '';
+    position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
+    width: 200%;
     height: 100%;
-    pointer-events: none;
-    z-index: 1000; /* snow and rain are never both visible (mutually exclusive), so no ordering conflict */
+    background:
+        radial-gradient(ellipse 40% 30% at 15% 70%, rgba(215, 220, 225, 0.45), transparent 70%),
+        radial-gradient(ellipse 35% 25% at 45% 40%, rgba(205, 210, 218, 0.35), transparent 70%),
+        radial-gradient(ellipse 45% 35% at 70% 75%, rgba(220, 224, 230, 0.45), transparent 70%),
+        radial-gradient(ellipse 30% 25% at 90% 35%, rgba(200, 206, 214, 0.3), transparent 70%),
+        linear-gradient(to top, rgba(210, 215, 222, 0.55) 0%, rgba(210, 215, 222, 0.25) 45%, rgba(210, 215, 222, 0.1) 100%);
+    will-change: transform;
+    animation: fog-drift 60s linear infinite alternate;
+    animation-play-state: paused;
 }
 
-.rain-canvas--ps1 {
-    image-rendering: pixelated;
+.fog-layer--visible::before {
+    animation-play-state: running;
 }
 
-.wind-canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 1000; /* snow/rain/wind/sleet are mutually exclusive, so no ordering conflict */
+/* PS1 mode: step through the drift for a choppy, low-framerate retro feel */
+.fog-layer.weather-layer--ps1::before {
+    animation-timing-function: steps(120);
 }
 
-.wind-canvas--ps1 {
-    image-rendering: pixelated;
+@keyframes fog-drift {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(-50%);
+    }
 }
 
-.sleet-canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 1000;
-}
-
-.sleet-canvas--ps1 {
-    image-rendering: pixelated;
+@media (prefers-reduced-motion: reduce) {
+    .fog-layer::before {
+        animation: none;
+    }
 }
 
 .sr-only {
