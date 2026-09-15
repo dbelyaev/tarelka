@@ -28,8 +28,13 @@ tarelka/
 │   ├── rain.js         # Rain effect with skewed pixelated streaks
 │   ├── wind.js         # Wind effect with drifting parallax streaks
 │   ├── sleet.js        # Sleet effect (rain/snow mix)
+│   ├── fog.js          # Fog effect (drifting CSS overlay)
+│   ├── thunderstorm.js # Thunderstorm effect (rain + lightning flashes)
+│   ├── momentary-event.js # Random-interval event scheduler + decaying pulses
 │   ├── weather.js      # Coordinates mutually-exclusive weather effects
-│   ├── canvas-effect.js # Shared canvas overlay lifecycle for weather effects
+│   ├── weather-registry.js # List of weather effects, names, and shortcut keys
+│   ├── weather-effect.js # Shared persisted toggle lifecycle for all weather effects
+│   ├── canvas-effect.js # Shared canvas overlay lifecycle for particle effects
 │   ├── live-weather.js # Live Stavanger weather fetch + effect auto-selection
 │   └── utils.js        # Utility functions
 ├── assets/
@@ -52,8 +57,13 @@ tarelka/
 - **`src/rain.js`** - Animated rain effect with short, skewed, pixelated streaks
 - **`src/wind.js`** - Animated wind effect with faint, near-horizontal drifting streaks
 - **`src/sleet.js`** - Animated sleet effect combining rain's fall angle with snow's horizontal drift
-- **`src/weather.js`** - Coordinates mutually-exclusive weather effects (snow, rain, wind, sleet)
-- **`src/canvas-effect.js`** - Shared canvas create/resize/toggle/cleanup lifecycle used by all weather effects
+- **`src/fog.js`** - Fog effect: a single DOM layer whose gradients, fade, and drift are pure CSS
+- **`src/thunderstorm.js`** - Thunderstorm effect: rain streaks plus photosensitivity-safe lightning flashes
+- **`src/momentary-event.js`** - Random-interval event scheduler and exponentially-decaying pulse intensity
+- **`src/weather.js`** - Instantiates weather effects (with a no-op fallback on failure) and keeps them mutually exclusive
+- **`src/weather-registry.js`** - The single list of weather effects: name, label, keyboard key, and factory
+- **`src/weather-effect.js`** - Shared persisted enabled/toggle/`setEnabled` lifecycle used by every weather effect
+- **`src/canvas-effect.js`** - Shared canvas create/resize/clear/cleanup lifecycle used by particle effects
 - **`src/live-weather.js`** - Fetches current Stavanger weather (Open-Meteo) and auto-selects the matching effect
 - **`src/utils.js`** - WebGL support check, debounce function, material disposal
 
@@ -65,12 +75,17 @@ tarelka/
 - **Rain Effect** - Falling rain at a skewed angle (press **R** to toggle)
 - **Wind Effect** - Faint drifting streaks with parallax layers (press **W** to toggle)
 - **Sleet Effect** - Falling rain/snow mix with horizontal drift (press **L** to toggle)
+- **Fog Effect** - Slowly drifting translucent fog overlay (press **F** to toggle)
+- **Thunderstorm Effect** - Rain with occasional lightning flashes (press **T** to toggle)
 - **Live Weather** - Auto-selects the matching effect from Stavanger's current conditions on load, unless you've made an explicit choice
 - **Touch Support** - Full mobile and tablet support
 - **Responsive Design** - Adapts to any screen size
 - **WebGL Optimization** - Pauses rendering when tab is inactive
 
-Snow, rain, wind, and sleet are mutually exclusive — enabling one turns off the others.
+Snow, rain, wind, sleet, fog, and thunderstorm are mutually exclusive — enabling one turns off the others.
+
+Lightning flashes are kept below the WCAG 2.3.1 limit of three flashes per second. With
+`prefers-reduced-motion: reduce`, each strike becomes a single dim flash and the fog stops drifting.
 
 ## Keyboard Controls
 
@@ -79,7 +94,11 @@ Snow, rain, wind, and sleet are mutually exclusive — enabling one turns off th
 - **R** - Toggle rain effect on/off (disables the others if active)
 - **W** - Toggle wind effect on/off (disables the others if active)
 - **L** - Toggle sleet effect on/off (disables the others if active)
+- **F** - Toggle fog effect on/off (disables the others if active)
+- **T** - Toggle thunderstorm effect on/off (disables the others if active)
 - **D** - Toggle debug mode (shows renderer statistics in console)
+
+Shortcuts are ignored while Ctrl, Cmd, or Alt is held, so browser shortcuts like Ctrl+F or Cmd+R keep working normally.
 
 ## Development
 

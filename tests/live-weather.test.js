@@ -19,7 +19,7 @@ function fakeWeather(name, enabled = false, hasExplicitPreference = false) {
 describe('mapWeatherToEffect', () => {
     const cases = [
         [0, 'none'], [1, 'none'], [2, 'none'], [3, 'none'],
-        [45, 'none'], [48, 'none'],
+        [45, 'fog'], [48, 'fog'],
         [51, 'rain'], [53, 'rain'], [55, 'rain'],
         [56, 'sleet'], [57, 'sleet'],
         [61, 'rain'], [63, 'rain'], [65, 'rain'],
@@ -27,7 +27,7 @@ describe('mapWeatherToEffect', () => {
         [71, 'snow'], [73, 'snow'], [75, 'snow'], [77, 'snow'],
         [80, 'rain'], [81, 'rain'], [82, 'rain'],
         [85, 'snow'], [86, 'snow'],
-        [95, 'rain'], [96, 'rain'], [99, 'rain']
+        [95, 'thunderstorm'], [96, 'thunderstorm'], [99, 'thunderstorm']
     ];
 
     it.each(cases)('maps WMO code %i to %s (calm wind)', (code, expected) => {
@@ -50,6 +50,11 @@ describe('mapWeatherToEffect', () => {
     it('lets precipitation win over high wind speed instead of promoting to wind', () => {
         expect(mapWeatherToEffect(65, CONFIG.liveWeather.windSpeedThresholdKmh + 20)).toBe('rain');
         expect(mapWeatherToEffect(75, CONFIG.liveWeather.windSpeedThresholdKmh + 20)).toBe('snow');
+    });
+
+    it('keeps fog and thunderstorm codes instead of promoting them to wind', () => {
+        expect(mapWeatherToEffect(45, CONFIG.liveWeather.windSpeedThresholdKmh + 20)).toBe('fog');
+        expect(mapWeatherToEffect(95, CONFIG.liveWeather.windSpeedThresholdKmh + 20)).toBe('thunderstorm');
     });
 });
 

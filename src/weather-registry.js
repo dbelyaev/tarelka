@@ -8,10 +8,14 @@ import { SnowEffect } from './snow.js';
 import { RainEffect } from './rain.js';
 import { WindEffect } from './wind.js';
 import { SleetEffect } from './sleet.js';
+import { FogEffect } from './fog.js';
+import { ThunderstormEffect } from './thunderstorm.js';
 
 export const WEATHER_DEFINITIONS = [
     { name: 'snow', label: 'Snow', key: 's', create: () => new SnowEffect() },
     { name: 'rain', label: 'Rain', key: 'r', create: () => new RainEffect() },
     { name: 'wind', label: 'Wind', key: 'w', create: () => new WindEffect() },
-    { name: 'sleet', label: 'Sleet', key: 'l', create: () => new SleetEffect() }
+    { name: 'sleet', label: 'Sleet', key: 'l', create: () => new SleetEffect() },
+    { name: 'fog', label: 'Fog', key: 'f', create: () => new FogEffect() },
+    { name: 'thunderstorm', label: 'Thunderstorm', key: 't', create: () => new ThunderstormEffect() }
 ];

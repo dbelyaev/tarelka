@@ -68,10 +68,10 @@ class Raindrop {
  * Rain effect manager
  */
 export class RainEffect extends CanvasEffect {
-    constructor() {
+    constructor({ className = 'rain-canvas', storageKey = 'rainEnabled' } = {}) {
         super({
-            className: 'rain-canvas',
-            storageKey: 'rainEnabled',
+            className,
+            storageKey,
             // No seasonal default (unlike snow) — rain has no natural "season" signal
             resolveDefaultEnabled: () => false
         });
