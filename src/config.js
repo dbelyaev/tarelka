@@ -66,6 +66,18 @@ export const CONFIG = {
         lineWidth: 1.5,
         opacity: { min: 0.3, max: 0.6 }
     },
+    thunderstorm: {
+        // Rain streaks reuse CONFIG.rain; these settings only shape the lightning flashes.
+        // Photosensitivity (WCAG 2.3.1, max 3 flashes/sec): a 0.5s minimum pulse gap
+        // allows at most 2 pulses in any 1s window, and strikes are seconds apart.
+        strikeInterval: { min: 5, max: 14 }, // Seconds between strikes; min must exceed the longest strike
+        maxPulses: 3, // Flicker pulses per strike
+        minPulseGapSec: 0.5,
+        maxPulseGapSec: 0.7,
+        pulseDecaySec: 0.12, // Decays to ~1.5% before the next pulse, so pulses stay distinct
+        peakOpacity: { min: 0.3, max: 0.55 }, // Flash overlay opacity — never a solid white screen
+        reducedMotionOpacityScale: 0.3 // prefers-reduced-motion: a single, dimmed pulse
+    },
     liveWeather: {
         latitude: 58.97, // Stavanger, Norway
         longitude: 5.73,
@@ -74,7 +86,7 @@ export const CONFIG = {
         windSpeedThresholdKmh: 30 // ~Beaufort 5 "fresh breeze" — judgment call
     },
     performance: {
-        mobileParticleScale: 0.6 // Density multiplier for snow/rain/wind/sleet particle counts on coarse-pointer (mobile-class) devices
+        mobileParticleScale: 0.6 // Density multiplier for snow/rain/wind/sleet/thunderstorm particle counts on coarse-pointer (mobile-class) devices
     },
     resize: {
         debounceMs: 100

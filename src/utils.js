@@ -45,6 +45,15 @@ export function prefersCoarsePointer() {
 }
 
 /**
+ * Check if the user has asked the OS/browser to minimize non-essential motion
+ * and flashing (e.g. to tone down lightning flashes).
+ * @returns {boolean} True if matchMedia is available and reports reduced motion
+ */
+export function prefersReducedMotion() {
+    return typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+/**
  * Non-cryptographic uniform random number in [min, max). Only used for cosmetic
  * randomness in particle effects (position/speed/angle) — never anything
  * security-sensitive, so Math.random() is the right tool here.

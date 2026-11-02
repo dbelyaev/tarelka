@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { checkWebGLSupport, debounce, isSnowSeason, disposeMaterial, prefersCoarsePointer, pickWeightedIndex } from '../src/utils.js';
+import { checkWebGLSupport, debounce, isSnowSeason, disposeMaterial, prefersCoarsePointer, prefersReducedMotion, pickWeightedIndex } from '../src/utils.js';
 
 describe('checkWebGLSupport', () => {
     it('returns false when the canvas cannot produce a WebGL context', () => {
@@ -105,6 +105,32 @@ describe('prefersCoarsePointer', () => {
             value: vi.fn(() => ({ matches: false }))
         });
         expect(prefersCoarsePointer()).toBe(false);
+    });
+});
+
+describe('prefersReducedMotion', () => {
+    afterEach(() => {
+        delete window.matchMedia;
+    });
+
+    it('returns false when matchMedia is unavailable (default jsdom environment)', () => {
+        expect(prefersReducedMotion()).toBe(false);
+    });
+
+    it('queries the reduced-motion media feature and reports its match', () => {
+        const matchMedia = vi.fn(query => ({ matches: query === '(prefers-reduced-motion: reduce)' }));
+        Object.defineProperty(window, 'matchMedia', { configurable: true, value: matchMedia });
+
+        expect(prefersReducedMotion()).toBe(true);
+        expect(matchMedia).toHaveBeenCalledWith('(prefers-reduced-motion: reduce)');
+    });
+
+    it('returns false when matchMedia reports no match', () => {
+        Object.defineProperty(window, 'matchMedia', {
+            configurable: true,
+            value: vi.fn(() => ({ matches: false }))
+        });
+        expect(prefersReducedMotion()).toBe(false);
     });
 });
 

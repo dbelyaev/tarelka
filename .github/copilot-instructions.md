@@ -1,7 +1,7 @@
 # Copilot Instructions for tarelka.xyz
 
-A static, build-free 3D model viewer (Three.js) with a PS1 retro rendering mode and a snow
-effect. No bundler, no framework — plain ES modules loaded directly by the browser.
+A static, build-free 3D model viewer (Three.js) with a PS1 retro rendering mode and
+mutually-exclusive weather effects. No bundler, no framework — plain ES modules loaded directly by the browser.
 
 ## Commands
 
@@ -35,10 +35,21 @@ npm test                  # runs `vitest run` (full suite)
   - `controls.js` — mouse/touch drag-to-rotate with inertia
   - `snow.js` — parallax snowflake effect (3 layers); also owns its own tuning constants
     (`LAYER_DISTRIBUTION`, `SMALL_FLAKE_THRESHOLD`, `MIN_SNOWFLAKES`) outside of `CONFIG`
-  - `utils.js` — WebGL capability check, debounce, material disposal
-- Feature toggles are keyboard-driven: `P` = PS1 style and `S` = snow effect both persist their
-  state to `localStorage` (`P` requires a reload to take effect); `D` = debug/renderer stats only
-  flips `CONFIG.debug` in memory and resets on reload — it is not persisted.
+  - `rain.js`, `wind.js`, `sleet.js` — canvas particle effects built on `canvas-effect.js`
+  - `fog.js` — non-canvas fog overlay; its look and drift live in `style.css` (`.fog-layer`)
+  - `thunderstorm.js` — extends `RainEffect` with lightning flashes driven by `momentary-event.js`;
+    flash timing/opacity bounds in `CONFIG.thunderstorm` are photosensitivity limits (WCAG 2.3.1), not just tuning
+  - `weather-effect.js` — base class owning the persisted `enabled` / `toggle()` / `setEnabled()` /
+    `hasExplicitPreference` contract; `canvas-effect.js` extends it for canvas overlays
+  - `weather-registry.js` — the single list of weather effects (name, label, key, factory). Add new
+    effects here; names must match `VALID_EFFECTS` in `live-weather.js` (enforced by `tests/weather-registry.test.js`)
+  - `weather.js` — instantiates the registry with a no-op fallback and keeps effects mutually exclusive
+  - `live-weather.js` — maps Stavanger's current WMO weather code to an effect name
+  - `utils.js` — WebGL capability check, debounce, media-query helpers, material disposal
+- Feature toggles are keyboard-driven: `P` = PS1 style and the weather keys (`S` snow, `R` rain, `W` wind,
+  `L` sleet, `F` fog, `T` thunderstorm) persist their state to `localStorage` (`P` requires a reload to
+  take effect); `D` = debug/renderer stats only flips `CONFIG.debug` in memory and resets on reload —
+  it is not persisted. Shortcuts with Ctrl/Cmd/Alt held or auto-repeat keydowns are ignored.
 - `index.html` ships a strict CSP (no `'unsafe-inline'`). The only inline script is the import map,
   allowed via a sha256 hash in the CSP meta tag — regenerate that hash whenever the import map JSON
   changes:

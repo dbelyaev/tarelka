@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { createWeatherGroup } from '../src/weather.js';
+import { createWeatherGroup, createNoopEffect, instantiateWeathers } from '../src/weather.js';
 
 function fakeWeather(label, enabled = false, hasExplicitPreference = false) {
     const effect = {
@@ -95,5 +95,46 @@ describe('createWeatherGroup', () => {
 
         group.toggle(snow);
         expect(snow.effect.enabled).toBe(false);
+    });
+});
+
+describe('instantiateWeathers', () => {
+    it('constructs each effect and carries over its name, label, and key', () => {
+        const effect = { enabled: false };
+        const [weather] = instantiateWeathers([
+            { name: 'rain', label: 'Rain', key: 'r', create: () => effect }
+        ]);
+
+        expect(weather).toEqual({ effect, name: 'rain', label: 'Rain', key: 'r' });
+    });
+
+    it('falls back to a disabled no-op effect when construction throws, without affecting the others', () => {
+        const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+        const working = { enabled: true };
+
+        const [broken, ok] = instantiateWeathers([
+            { name: 'fog', label: 'Fog', key: 'f', create: () => { throw new Error('boom'); } },
+            { name: 'rain', label: 'Rain', key: 'r', create: () => working }
+        ]);
+
+        expect(consoleError).toHaveBeenCalledWith('Failed to initialize Fog effect:', expect.any(Error));
+        expect(broken.effect.enabled).toBe(false);
+        expect(broken.effect.hasExplicitPreference).toBe(false);
+        expect(() => {
+            broken.effect.update(0.016);
+            broken.effect.draw();
+            broken.effect.toggle();
+            broken.effect.setEnabled(true);
+            broken.effect.cleanup();
+        }).not.toThrow();
+        expect(ok.effect).toBe(working);
+
+        consoleError.mockRestore();
+    });
+});
+
+describe('createNoopEffect', () => {
+    it('returns a fresh object each call so stubs never share state', () => {
+        expect(createNoopEffect()).not.toBe(createNoopEffect());
     });
 });

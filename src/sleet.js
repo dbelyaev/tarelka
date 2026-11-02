@@ -70,7 +70,6 @@ export class SleetEffect extends CanvasEffect {
     constructor() {
         super({
             className: 'sleet-canvas',
-            ps1ClassName: 'sleet-canvas--ps1',
             storageKey: 'sleetEnabled',
             // No seasonal default (like rain) — sleet has no natural "season" signal
             resolveDefaultEnabled: () => false
